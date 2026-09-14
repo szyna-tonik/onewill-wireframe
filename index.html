@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OneWill — landing wireframe v3.3</title>
+<style>
+:root{
+  --g0:#FFFFFF;
+  --g1:#F5F5F4;
+  --g2:#E7E6E4;
+  --g3:#CFCECB;
+  --g4:#9A9895;
+  --g5:#5E5C59;
+  --g6:#2B2A28;
+
+  --act-eject:#F98912;
+  --act-bounce:#FF7D7D;
+
+  --col:760px;
+  --wide:1020px;
+  --gut:24px;
+
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--g1);color:var(--g6);font:400 16px/1.6 var(--mono)}
+
+.col{width:100%;max-width:var(--col);margin:0 auto;padding:0 var(--gut)}
+.wide{width:100%;max-width:var(--wide);margin:0 auto;padding:0 var(--gut)}
+section{padding:120px 0}
+.center{text-align:center}
+.stack>*+*{margin-top:22px}
+
+h1,h2{font-family:var(--sans);font-weight:600;letter-spacing:-0.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(34px,5vw,68px);line-height:0.98}
+h2{font-size:clamp(25px,3.2vw,38px);line-height:1.1}
+h2.big{font-size:clamp(34px,5vw,60px);line-height:1.02}
+p{margin:0}
+.lead{font-size:17px;line-height:1.7}
+.lead.big{font-size:clamp(18px,2.1vw,24px);line-height:1.55}
+.body{font-family:var(--sans);font-size:17px;line-height:1.65;max-width:62ch;margin-inline:auto}
+.dim{color:var(--g5)}
+
+.btn{display:inline-block;font:600 14px/1 var(--mono);padding:16px 22px;border:1px solid transparent;text-decoration:none}
+.btn-primary{background:var(--g6);color:var(--g0)}
+.btn-primary:hover{background:var(--g5)}
+.btn-quiet{background:transparent;color:var(--g6);border-color:var(--g3)}
+.btn-quiet:hover{border-color:var(--g5)}
+.btn-invert{background:var(--g1);color:var(--g6)}
+.btn-invert:hover{background:var(--g2)}
+.btn:focus-visible{outline:2px solid var(--g5);outline-offset:3px}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px solid var(--g3)}
+.nav{max-width:1840px;margin:0 auto;padding:16px var(--gut);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--g6)}
+.brand .mark{width:34px;height:34px;border-radius:50%;background:var(--g2);border:1px solid var(--g4);display:grid;place-items:center;font:400 9px/1 var(--mono);color:var(--g5)}
+.brand .word{font-family:var(--sans);font-weight:600;font-size:22px;letter-spacing:-0.02em}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font:400 14px/1 var(--mono);color:var(--g6);text-decoration:none}
+.nav-links a:hover{text-decoration:underline}
+.nav-right{display:flex;gap:10px;align-items:center}
+.nav-right .btn{padding:12px 16px}
+
+/* hero: its own light-grey band so it reads as the hero */
+.hero{padding:140px 0 120px;position:relative;background:var(--g2);border-bottom:1px solid var(--g3)}
+.hero .col{position:relative;z-index:1}
+.hero h1{margin-bottom:30px}
+.hero .lead{max-width:52ch;margin:0 auto 38px;color:var(--g5)}
+/* width/height are the backing-store size in device pixels, so the CSS size
+   has to be pinned too or the canvas lays out at 2x and widens the page */
+#heroLoop{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ---- the one-click story -------------------------------------------------
+   A full-height opening, then a two-column sequence: headings scroll down
+   the left while the illustration builds in one pinned frame on the right,
+   a layer per heading, ending as a single composition.
+   --pin  how far below the header the frame sits
+   -------------------------------------------------------------------------- */
+.story{padding:0}
+/* the opening fills the window, so nothing below it is in frame yet */
+.story-open{
+  min-height:100vh;display:grid;place-content:center;justify-items:center;
+  max-width:var(--col);margin:0 auto;padding:72px var(--gut);text-align:center;
+}
+.hamster{
+  width:min(320px,44vh,70vw);aspect-ratio:1;margin:52px auto 0;
+  background:var(--g2);border:1px dashed var(--g4);
+  display:grid;place-items:center;text-align:center;
+  font:400 12px/1.7 var(--mono);color:var(--g5);
+}
+
+.collect{
+  --pin:92px;
+  max-width:1560px;margin:104px auto 0;padding:0 var(--gut);
+  display:grid;
+  /* a 1fr second track would starve a minmax() first track down to its
+     minimum, so the text column is sized as a share of the container */
+  grid-template-columns:clamp(280px,30%,460px) minmax(0,1fr);
+  column-gap:64px;
+}
+.collect-text{display:flex;flex-direction:column}
+.beat{min-height:78vh;padding-top:var(--pin)}
+.beat:last-child{min-height:108vh}
+.beat h3{
+  margin:0;
+  font-family:var(--sans);font-weight:600;
+  /* a touch under the section h2 so the two hard line breaks always hold */
+  font-size:clamp(24px,2.4vw,36px);line-height:1.12;letter-spacing:-0.02em;
+  color:var(--g6);
+}
+
+/* one frame, no card: every layer sits in the same coordinate space and
+   latches up into it, so the four of them end as a single composition */
+.stack{
+  position:sticky;top:var(--pin);
+  aspect-ratio:1000/640;overflow:hidden;
+}
+.layer{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform:translateY(103%);
+  transition:transform 560ms cubic-bezier(.22,.61,.36,1);
+}
+.layer.on{transform:none}
+.layer:first-child{transform:none;transition:none}
+
+/* wide enough that the three sentences each hold one line; below that they
+   wrap on their own */
+.story-end{max-width:960px;margin:0 auto;padding:210px var(--gut) 130px;text-align:center}
+.story-end p{
+  font-family:var(--sans);font-weight:600;
+  font-size:clamp(25px,3.2vw,38px);line-height:1.16;letter-spacing:-0.02em;
+  margin:0 auto;color:var(--g6);
+}
+.story-end .hamster{margin-top:76px}
+
+.logband{background:var(--g2);padding:110px 0}
+.log{background:var(--g6);color:var(--g2);padding:34px 40px 30px;font:400 15px/1.2 var(--mono)}
+.log-head{display:flex;justify-content:space-between;color:var(--g4);font-weight:600;margin-bottom:26px}
+.log-row{display:grid;grid-template-columns:96px 14px minmax(0,210px) 1fr;column-gap:16px;align-items:center;height:32px;opacity:0}
+.log-row.in{opacity:1}
+.log-row .t{color:var(--g4)}
+.sq{width:12px;height:12px}
+.sq.ej{background:var(--act-eject)}
+.sq.bn{background:var(--act-bounce)}
+.log-legend{display:flex;gap:22px;margin-top:22px;color:var(--g4);font-size:13px}
+.log-legend span{display:inline-flex;align-items:center;gap:8px}
+.log-legend i{width:10px;height:10px;display:inline-block}
+.log-legend i.ej{background:var(--act-eject)}
+.log-legend i.bn{background:var(--act-bounce)}
+.log-caption{max-width:62ch;margin:26px auto 0;text-align:center;font-size:14px;color:var(--g5);line-height:1.6}
+
+/* boundary, its own full band */
+.boundary{background:var(--g6);color:var(--g1);padding:150px 0}
+.boundary h2{color:var(--g0)}
+.boundary .lead{color:var(--g3)}
+.bwrap{text-align:center;position:relative}
+.ball{width:170px;height:170px;border-radius:50%;background:transparent;border:1px solid var(--g4);display:grid;place-items:center;font:400 11px/1.5 var(--mono);color:var(--g4);text-align:center;margin:0 auto 44px}
+.chips{display:flex;gap:12px;justify-content:center;margin-top:44px;flex-wrap:wrap}
+.chip{font:600 14px/1 var(--mono);padding:14px 20px;letter-spacing:0.06em;border:1px solid var(--g5);color:var(--g1)}
+
+.spec{list-style:none;padding:0;margin:38px auto 0;max-width:58ch;text-align:left}
+.spec li{display:grid;grid-template-columns:10px 1fr;gap:16px;padding:15px 0;border-bottom:1px solid var(--g3);font-size:15px;line-height:1.55}
+.spec li::before{content:"";width:7px;height:7px;background:var(--g4);margin-top:9px}
+
+.sheet{display:grid;grid-template-columns:repeat(3,1fr);margin-top:56px;border-top:1px solid var(--g4);border-left:1px solid var(--g4)}
+.cell{border-right:1px solid var(--g4);border-bottom:1px solid var(--g4);padding:28px 22px;text-align:left;background:var(--g0)}
+.cell .k{font:400 12px/1 var(--mono);color:var(--g5);letter-spacing:0.04em}
+.cell .v{font-family:var(--sans);font-weight:600;font-size:clamp(28px,3.6vw,42px);line-height:1;letter-spacing:-0.02em;margin-top:16px;color:var(--g4)}
+.cell .s{font:400 12px/1.55 var(--mono);color:var(--g5);margin-top:14px}
+
+.people{display:flex;gap:48px;justify-content:center;margin-top:46px;flex-wrap:wrap}
+.person{width:230px;text-align:center}
+.avatar{width:110px;height:110px;margin:0 auto 16px;background:var(--g2);border:1px dashed var(--g4);display:grid;place-items:center;font:400 11px/1.4 var(--mono);color:var(--g5)}
+.person .n{font-family:var(--sans);font-weight:600;font-size:18px}
+.person .r{font-size:13px;color:var(--g5);line-height:1.6;margin-top:6px}
+.person .x{font-size:12px;color:var(--g4);line-height:1.6;margin-top:8px}
+.backers{margin-top:48px;padding-top:30px;border-top:1px solid var(--g3);font-size:13px;color:var(--g5)}
+.logos{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.logos span{border:1px dashed var(--g4);padding:12px 18px;font-size:12px;color:var(--g4)}
+
+/* CTA band, deliberately separated */
+.cta{background:var(--g6);color:var(--g1);padding:140px 0;text-align:center}
+.cta h2{color:var(--g0)}
+.cta .price{font-family:var(--sans);font-weight:600;font-size:clamp(48px,8vw,86px);letter-spacing:-0.03em;line-height:1;color:var(--g3);margin-top:26px}
+.cta .price small{font-family:var(--mono);font-weight:400;font-size:16px;letter-spacing:0;color:var(--g4)}
+.cta .sub{color:var(--g3);margin-top:20px}
+.cta .btns{margin-top:40px}
+.cta .fine{font-size:13px;color:var(--g4);margin-top:26px}
+
+.egg{padding:90px 0;background-image:radial-gradient(var(--g3) 1.5px,transparent 1.5px);background-size:32px 32px;text-align:center}
+.egg a{display:inline-block;background:var(--g6);color:var(--g1);font:600 18px/1 var(--mono);padding:22px 34px;text-decoration:underline}
+.egg .cursor{display:block;margin:14px auto 0;width:26px;height:34px}
+
+footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--g5)}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+.tag{display:inline-block;font:600 11px/1 var(--mono);padding:4px 6px;background:var(--g6);color:var(--g0);vertical-align:middle;letter-spacing:0.03em}
+.tag.prop{background:transparent;color:var(--g5);border:1px solid var(--g4)}
+.tag.src{background:transparent;color:var(--g4);border:1px dotted var(--g4)}
+.boundary .tag,.cta .tag{background:var(--g1);color:var(--g6)}
+
+/* below this the two columns collapse: the headings read as a list and the
+   finished composition sits under them */
+@media (max-width:900px){
+  .collect{grid-template-columns:1fr;column-gap:0;margin-top:72px}
+  .beat,.beat:last-child{min-height:0;padding-top:0;margin-bottom:26px}
+  /* relative, not static: the layers are absolute and would otherwise
+     escape to the nearest positioned ancestor */
+  .stack{position:relative;margin-top:40px}
+  .layer{transform:none}
+  .story-end{padding-top:110px}
+}
+@media (max-width:720px){
+  section{padding:78px 0}
+  .story{padding-top:78px}
+  .hero{padding:88px 0 70px}
+  .nav-links{display:none}
+  .log{padding:24px 20px;font-size:12px}
+  .log-row{grid-template-columns:62px 10px minmax(0,116px) 1fr;column-gap:10px}
+  .logband{padding:68px 0}
+  .boundary,.cta{padding:90px 0}
+  .ball{width:120px;height:120px}
+  .sheet{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .log-row{opacity:1 !important}
+  .layer{transform:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a class="brand" href="#top"><span class="mark">logo</span><span class="word">OneWill</span></a>
+    <div class="nav-links">
+      <a href="#top">Home</a><a href="#team">Team</a><a href="#">Blog</a><a href="#">Demo</a>
+    </div>
+    <div class="nav-right">
+      <a class="btn btn-primary" href="#start">Build &amp; launch →</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="col center">
+    <h1>A long-running computer in the cloud that you control.</h1>
+    <p class="lead">Spin up a full machine, terminal and desktop, and see everything your agents touch.</p>
+    <div class="btns">
+      <a class="btn btn-primary" href="#start">Build &amp; launch →</a>
+      <a class="btn btn-quiet" href="#click">See the machine</a>
+    </div>
+  </div>
+</section>
+
+<!-- MINUTE ZERO: the one-click story -->
+<section id="click" class="story">
+
+  <!-- the layers are defined once and referenced by each shot below, so the
+       four illustrations stay in sync if any of this geometry is edited -->
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+
+      <g id="l-frame">
+        <g fill="none" stroke="#5E5C59" stroke-width="1.5">
+          <rect x="1" y="1" width="998" height="638"/>
+          <line x1="1" y1="40" x2="999" y2="40"/>
+          <line x1="1" y1="86" x2="999" y2="86"/>
+          <rect x="18" y="10" width="150" height="24"/>
+          <rect x="184" y="10" width="150" height="24" stroke="#CFCECB"/>
+          <rect x="150" y="52" width="700" height="24" stroke="#CFCECB"/>
+        </g>
+        <g font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">
+          <text x="32" y="27">onewill.ai</text>
+          <text x="162" y="69">your browser</text>
+        </g>
+      </g>
+
+      <g id="l-desktop">
+        <rect x="18" y="102" width="964" height="520" fill="#F5F5F4" stroke="#9A9895" stroke-width="1.5"/>
+        <text x="34" y="124" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">the desktop you are renting</text>
+        <g fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5">
+          <path d="M36 152h16l5 8h23a3 3 0 0 1 3 3v25a3 3 0 0 1-3 3H36a3 3 0 0 1-3-3v-33a3 3 0 0 1 3-3z"/>
+          <path d="M40 218h22l14 14v30a3 3 0 0 1-3 3H40a3 3 0 0 1-3-3v-41a3 3 0 0 1 3-3z"/>
+          <path d="M62 218v11a3 3 0 0 0 3 3h11" fill="none"/>
+          <path d="M40 294h22l14 14v30a3 3 0 0 1-3 3H40a3 3 0 0 1-3-3v-41a3 3 0 0 1 3-3z"/>
+          <path d="M62 294v11a3 3 0 0 0 3 3h11" fill="none"/>
+        </g>
+        <g font-family="ui-monospace,monospace" font-size="10" fill="#5E5C59" text-anchor="middle">
+          <text x="57" y="206">project</text>
+          <text x="57" y="282">data.csv</text>
+          <text x="57" y="358">notes.md</text>
+        </g>
+        <rect x="350" y="562" width="300" height="48" rx="10" fill="#FFFFFF" stroke="#9A9895" stroke-width="1.5"/>
+        <g stroke="#9A9895" stroke-width="1.5">
+          <rect x="411" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
+          <rect x="449" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
+          <rect x="487" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
+          <rect x="525" y="572" width="26" height="26" rx="5" fill="#2B2A28"/>
+          <rect x="563" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
+        </g>
+        <g fill="#5E5C59">
+          <circle cx="462" cy="604" r="1.8"/>
+          <circle cx="538" cy="604" r="1.8"/>
+        </g>
+      </g>
+
+      <g id="l-chrome">
+        <g fill="none" stroke="#5E5C59" stroke-width="1.5">
+          <rect x="110" y="150" width="520" height="320" fill="#FFFFFF"/>
+          <line x1="110" y1="184" x2="630" y2="184"/>
+          <g stroke="#CFCECB">
+            <line x1="140" y1="222" x2="414" y2="222"/>
+            <line x1="140" y1="246" x2="584" y2="246"/>
+            <line x1="140" y1="270" x2="524" y2="270"/>
+            <rect x="140" y="300" width="210" height="130"/>
+            <line x1="380" y1="312" x2="584" y2="312"/>
+            <line x1="380" y1="336" x2="554" y2="336"/>
+            <line x1="380" y1="360" x2="578" y2="360"/>
+          </g>
+        </g>
+        <text x="126" y="174" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">Chrome, running on the machine</text>
+      </g>
+
+      <g id="l-term">
+        <rect x="470" y="270" width="470" height="280" fill="#2B2A28"/>
+        <line x1="470" y1="304" x2="940" y2="304" stroke="#5E5C59" stroke-width="1.5"/>
+        <g stroke="#9A9895" stroke-width="1.5">
+          <line x1="500" y1="342" x2="720" y2="342"/>
+          <line x1="500" y1="370" x2="830" y2="370"/>
+          <line x1="500" y1="398" x2="640" y2="398"/>
+          <line x1="500" y1="426" x2="890" y2="426"/>
+          <line x1="500" y1="454" x2="606" y2="454"/>
+          <line x1="500" y1="482" x2="778" y2="482"/>
+        </g>
+        <rect x="500" y="502" width="12" height="20" fill="#9A9895"/>
+        <text x="488" y="296" font-family="ui-monospace,monospace" font-size="12" fill="#CFCECB">terminal</text>
+      </g>
+
+    </defs>
+  </svg>
+
+  <div class="story-open">
+    <h2>Nothing to install, nothing to set up.</h2>
+    <div class="hamster">hamster<br>illustration<br>placeholder</div>
+  </div>
+
+  <div class="collect">
+
+    <div class="collect-text">
+      <div class="beat"><h3>The machine starts and<br>opens in your browser:</h3></div>
+      <div class="beat"><h3>One click, and you<br>have a desktop.</h3></div>
+      <div class="beat"><h3>Chrome, running<br>on the machine.</h3></div>
+      <div class="beat"><h3>And a terminal,<br>when you want one.</h3></div>
+    </div>
+
+    <div class="collect-frame">
+      <div class="stack" role="img" aria-label="A browser window at onewill.ai holding a rented desktop, with file icons, a dock, a Chrome window and a terminal">
+        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-frame"/></svg>
+        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-desktop"/></svg>
+        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-chrome"/></svg>
+        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-term"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="story-end">
+    <p>Your laptop can do most of this.<br>Close the lid and it stops.<br>Hand it to someone else and nothing matches.</p>
+    <div class="hamster">hamster<br>illustration<br>placeholder</div>
+  </div>
+
+</section>
+
+<!-- THE SESSION -->
+<div class="logband">
+  <div class="col center">
+    <h2>Every course starts the same way.</h2>
+    <p class="body dim" style="margin-top:20px">
+      Two weeks fixing everyone's environment before anyone writes code.
+    </p>
+    <p class="body" style="margin-top:18px">
+      OneWill gives everyone the same machine. Everything your agent reads or writes has to cross the boundary first, so you can see all of it.
+    </p>
+  </div>
+
+  <div class="wide" style="margin-top:52px">
+    <div class="log" id="log">
+      <div class="log-head"><span>boundary log</span><span>R undo last</span></div>
+      <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>read ./data.csv</span><span>ejected on expand</span></div>
+      <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>credentials.json</span><span>ejected on expand</span></div>
+      <div class="log-row"><span class="t">10:33:12</span><i class="sq bn"></i><span>credentials.json</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:13</span><i class="sq bn"></i><span>credentials.json</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>homework.pdf</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>autograder</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>credentials.json</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq ej"></i><span>homework.pdf</span><span>ejected on expand</span></div>
+      <div class="log-row"><span class="t">10:33:16</span><i class="sq ej"></i><span>docker build</span><span>ejected on expand</span></div>
+      <div class="log-row"><span class="t">10:33:17</span><i class="sq ej"></i><span>curl api.openai.com</span><span>ejected on expand</span></div>
+      <div class="log-legend"><span><i class="ej"></i>ejected on expand</span><span><i class="bn"></i>bounced</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WHAT YOU GET -->
+<section id="spec">
+  <div class="col center">
+    <h2>What you get</h2>
+    <ul class="spec">
+      <li>A full desktop and a terminal, both in the browser</li>
+      <li>Chrome runs on the machine, so you can watch the agent browse</li>
+      <li>Run whatever you already use: Claude Code, Codex, your own scripts</li>
+      <li>Send one link and someone else sees your screen, or takes over</li>
+      <li>The same setup every time, so the autograder behaves the same for everyone</li>
+      <li>The machine stays up when you close the tab</li>
+    </ul>
+
+    <div class="sheet">
+      <div class="cell">
+        <div class="k">boot time</div>
+        <div class="v">00s <span class="tag">TO CONFIRM</span></div>
+        <div class="s">From clicking build to a usable desktop.</div>
+      </div>
+      <div class="cell">
+        <div class="k">uptime</div>
+        <div class="v">00.0% <span class="tag">TO CONFIRM</span></div>
+        <div class="s">Over what period, and counted since when.</div>
+      </div>
+      <div class="cell">
+        <div class="k">preinstalled environments</div>
+        <div class="v">00 <span class="tag">TO CONFIRM</span></div>
+        <div class="s">Ready-made setups you can launch straight into.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOUNDARY, full band -->
+<div class="boundary">
+  <div class="col bwrap">
+    <div class="ball">hamster<br>in ball</div>
+    <h2 class="big">Agent-World Boundary</h2>
+    <p class="lead big" style="max-width:46ch;margin:26px auto 0">
+      Every action is observed. Every effect is mediated.
+      You remain in control with governance, provenance, rollback, and more.
+    </p>
+    <div class="chips"><span class="chip">OBSERVE</span><span class="chip">MEDIATE</span><span class="chip">CONTROL</span></div>
+  </div>
+</div>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="col center">
+    <h2>Wan and Will</h2>
+    <p class="body dim" style="margin-top:20px">
+      Will and Wan met in the CMU Database Group in 2018 and have built data systems ever since.
+      Before that, they spent a lot of semesters telling students to try reinstalling.
+    </p>
+
+    <div class="people">
+      <div class="person">
+        <div class="avatar">photo<br>on live site</div>
+        <div class="n">Will Zhang</div>
+        <div class="r">CEO. CMU CS PhD.<br>MongoDB Fellowship.</div>
+        <div class="x">Microsoft GSL, SingleStore, NVIDIA</div>
+      </div>
+      <div class="person">
+        <div class="avatar">photo<br>on live site</div>
+        <div class="n">Wan Lim</div>
+        <div class="r">CTO. CMU CS PhD.<br>National CTF win.</div>
+        <div class="x">Microsoft Research, Amazon Aurora</div>
+      </div>
+    </div>
+
+    <p class="body dim" style="margin-top:40px;font-size:15px">
+      <span class="tag src">FROM onewill.ai</span>
+      Advised by Andy Pavlo, CMU professor.
+    </p>
+
+    <div class="backers">
+      Backed by
+      <div class="logos"><span>a16z speedrun</span><span>Essence VC</span><span>Tall Ventures</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA, separated band -->
+<div class="cta" id="start">
+  <div class="col">
+    <h2 class="big">Start</h2>
+    <p class="price">$20<small> / month</small> <span class="tag">TO CONFIRM</span></p>
+    <p class="body sub">Sign in and the machine is yours.</p>
+    <div class="btns"><a class="btn btn-invert" href="#">Build &amp; launch →</a></div>
+    <p class="fine">Ask us anything on Discord.</p>
+  </div>
+</div>
+
+<!-- EASTER EGG -->
+<div class="egg">
+  <a href="https://hamsterball-the-game.vercel.app/">Hamsterball: The Game™</a>
+  <svg class="cursor" viewBox="0 0 14 18" aria-hidden="true">
+    <path d="M2 1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-4v1h1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v3H2z" fill="#2B2A28"/>
+  </svg>
+</div>
+
+</main>
+
+<footer><div class="col foot"><span>OneWill</span><span>Wireframe v3.3 · not final copy</span></div></footer>
+
+<script>
+(function(){
+'use strict';
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* =============================================================
+   HERO LOOP — canvas stand-in for the boundary loop video.
+   8 pixels bounce off an invisible ellipse under the headline.
+   Fixed 125ms ticks (8fps), positions quantised to an 8px grid.
+   No easing anywhere.
+   ============================================================= */
+var HERO = { count:8, speed:40, step:8, ew:50, eh:36, size:6, color:'#9A9895' };
+var hero = document.querySelector('.hero');
+var cv = document.createElement('canvas');
+cv.id = 'heroLoop';
+cv.setAttribute('aria-hidden','true');
+hero.insertBefore(cv, hero.firstChild);
+var ctx = cv.getContext('2d');
+var parts = [], heroTimer = null, heroVisible = true, W = 0, Hh = 0;
+
+function sizeCanvas(){
+  var r = hero.getBoundingClientRect();
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = Math.max(1, Math.round(r.width));
+  Hh = Math.max(1, Math.round(r.height));
+  cv.width = W * dpr; cv.height = Hh * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function ellipse(){
+  return { cx: W/2, cy: Hh/2, a: Math.max(1, W * HERO.ew / 200), b: Math.max(1, Hh * HERO.eh / 200) };
+}
+function inEllipse(x, y){
+  var e = ellipse();
+  var dx = (x - e.cx) / e.a, dy = (y - e.cy) / e.b;
+  return dx*dx + dy*dy < 1;
+}
+function reflectOffEllipse(p){
+  var e = ellipse();
+  var nx = (p.x - e.cx) / (e.a * e.a);
+  var ny = (p.y - e.cy) / (e.b * e.b);
+  var m = Math.hypot(nx, ny) || 1;
+  nx /= m; ny /= m;
+  var dot = p.vx * nx + p.vy * ny;
+  p.vx -= 2 * dot * nx;
+  p.vy -= 2 * dot * ny;
+}
+function seed(){
+  parts = [];
+  for (var i = 0; i < HERO.count; i++){
+    var x, y, guard = 0;
+    do { x = Math.random() * W; y = Math.random() * Hh; guard++; }
+    while (inEllipse(x, y) && guard < 80);
+    var an = Math.random() * Math.PI * 2;
+    parts.push({ x: x, y: y, vx: Math.cos(an), vy: Math.sin(an) });
+  }
+}
+function drawHero(){
+  ctx.clearRect(0, 0, W, Hh);
+  ctx.fillStyle = HERO.color;
+  var q = HERO.step, s = HERO.size;
+  for (var i = 0; i < parts.length; i++){
+    var p = parts[i];
+    ctx.fillRect(Math.round(p.x / q) * q, Math.round(p.y / q) * q, s, s);
+  }
+}
+function heroTick(){
+  var d = HERO.speed * 0.125;
+  for (var i = 0; i < parts.length; i++){
+    var p = parts[i];
+    var nx = p.x + p.vx * d, ny = p.y + p.vy * d;
+    if (nx < 0 || nx > W - HERO.size){ p.vx = -p.vx; nx = p.x; }
+    if (ny < 0 || ny > Hh - HERO.size){ p.vy = -p.vy; ny = p.y; }
+    if (inEllipse(nx, ny)){ reflectOffEllipse(p); }
+    else { p.x = nx; p.y = ny; }
+  }
+  drawHero();
+}
+function heroStart(){
+  if (!heroTimer && !reduce && heroVisible) heroTimer = setInterval(heroTick, 125);
+}
+function heroStop(){ if (heroTimer){ clearInterval(heroTimer); heroTimer = null; } }
+sizeCanvas(); seed(); drawHero(); heroStart();
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      heroVisible = e.isIntersecting;
+      if (heroVisible) heroStart(); else heroStop();
+    });
+  }, { threshold: 0.05 }).observe(hero);
+}
+window.addEventListener('resize', function(){ sizeCanvas(); seed(); drawHero(); });
+
+/* =============================================================
+   ONE-CLICK STORY — the four layers share one frame and latch up
+   into it as their heading passes a line in the middle of the
+   window. IntersectionObserver only: scroll position is never read
+   or written, and scrolling back takes the layers out again.
+   ============================================================= */
+var layers = Array.prototype.slice.call(document.querySelectorAll('.layer'));
+var beats  = Array.prototype.slice.call(document.querySelectorAll('.beat'));
+function showLayers(n){
+  layers.forEach(function(l, i){ l.classList.toggle('on', i <= n); });
+}
+if (reduce || !('IntersectionObserver' in window)){
+  showLayers(layers.length - 1);
+} else {
+  showLayers(0);
+  var storyIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) showLayers(beats.indexOf(e.target));
+    });
+  }, { rootMargin: '-52% 0px -47% 0px' });   /* a thin band mid-window */
+  beats.forEach(function(b){ storyIO.observe(b); });
+}
+
+/* =============================================================
+   BOUNDARY LOG — rows stagger in at 110ms, fires once.
+   ============================================================= */
+var rows = Array.prototype.slice.call(document.querySelectorAll('.log-row'));
+if (!('IntersectionObserver' in window) || reduce){
+  rows.forEach(function(r){ r.classList.add('in'); });
+} else {
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (!e.isIntersecting) return;
+      rows.forEach(function(r, i){ setTimeout(function(){ r.classList.add('in'); }, i * 110); });
+      io.disconnect();
+    });
+  }, { threshold: 0.25 });
+  io.observe(document.getElementById('log'));
+}
+})();
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OneWill — landing wireframe v3.3</title>
+<title>OneWill — landing wireframe v4</title>
 <style>
 :root{
   --g0:#FFFFFF;
@@ -54,6 +54,8 @@ p{margin:0}
 .btn-invert:hover{background:var(--g2)}
 .btn:focus-visible{outline:2px solid var(--g5);outline-offset:3px}
 .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-icon{display:inline-flex;align-items:center;gap:10px}
+.btn-icon svg{width:17px;height:17px;fill:currentColor;flex:none}
 
 header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px solid var(--g3)}
 .nav{max-width:1840px;margin:0 auto;padding:16px var(--gut);display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -76,27 +78,18 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
 #heroLoop{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
 /* ---- the one-click story -------------------------------------------------
-   A full-height opening, then a two-column sequence: headings scroll down
-   the left while the illustration builds in one pinned frame on the right,
-   a layer per heading, ending as a single composition.
-   --pin  how far below the header the frame sits
+   The browser frame opens centred, under the heading. On the first beat it
+   slides across into the right-hand column, and from there the illustration
+   builds a layer per beat, ending as a single composition.
+   --pin    how far below the header the frame sits
+   --shift  text column + gap, measured once in JS: half of it is how far
+            left the frame sits while it is still centred
    -------------------------------------------------------------------------- */
 .story{padding:0}
-/* the opening fills the window, so nothing below it is in frame yet */
-.story-open{
-  min-height:100vh;display:grid;place-content:center;justify-items:center;
-  max-width:var(--col);margin:0 auto;padding:72px var(--gut);text-align:center;
-}
-.hamster{
-  width:min(320px,44vh,70vw);aspect-ratio:1;margin:52px auto 0;
-  background:var(--g2);border:1px dashed var(--g4);
-  display:grid;place-items:center;text-align:center;
-  font:400 12px/1.7 var(--mono);color:var(--g5);
-}
-
+.story-open{max-width:var(--col);margin:0 auto;padding:150px var(--gut) 0;text-align:center}
 .collect{
   --pin:92px;
-  max-width:1560px;margin:104px auto 0;padding:0 var(--gut);
+  max-width:1560px;margin:86px auto 0;padding:0 var(--gut);
   display:grid;
   /* a 1fr second track would starve a minmax() first track down to its
      minimum, so the text column is sized as a share of the container */
@@ -105,6 +98,8 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
 }
 .collect-text{display:flex;flex-direction:column}
 .beat{min-height:78vh;padding-top:var(--pin)}
+/* nothing on the left yet: this is the stretch where the frame is centred */
+.beat.lead{min-height:64vh}
 .beat:last-child{min-height:108vh}
 .beat h3{
   margin:0;
@@ -113,13 +108,17 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
   font-size:clamp(24px,2.4vw,36px);line-height:1.12;letter-spacing:-0.02em;
   color:var(--g6);
 }
+.beat p{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--g5);margin-top:16px;max-width:36ch}
 
 /* one frame, no card: every layer sits in the same coordinate space and
    latches up into it, so the four of them end as a single composition */
 .stack{
   position:sticky;top:var(--pin);
   aspect-ratio:1000/640;overflow:hidden;
+  /* the same latch the layers use, so the move across reads as one system */
+  transition:transform 560ms cubic-bezier(.22,.61,.36,1);
 }
+.stack.center{transform:translateX(calc(var(--shift,0px) * -0.5))}
 .layer{
   position:absolute;inset:0;width:100%;height:100%;
   transform:translateY(103%);
@@ -128,17 +127,10 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
 .layer.on{transform:none}
 .layer:first-child{transform:none;transition:none}
 
-/* wide enough that the three sentences each hold one line; below that they
-   wrap on their own */
+/* the section lands here: what was just assembled, then what it is for */
 .story-end{max-width:960px;margin:0 auto;padding:210px var(--gut) 130px;text-align:center}
-.story-end p{
-  font-family:var(--sans);font-weight:600;
-  font-size:clamp(25px,3.2vw,38px);line-height:1.16;letter-spacing:-0.02em;
-  margin:0 auto;color:var(--g6);
-}
-.story-end .hamster{margin-top:76px}
 
-.logband{background:var(--g2);padding:110px 0}
+.logband{background:var(--g2);padding:130px 0}
 .log{background:var(--g6);color:var(--g2);padding:34px 40px 30px;font:400 15px/1.2 var(--mono)}
 .log-head{display:flex;justify-content:space-between;color:var(--g4);font-weight:600;margin-bottom:26px}
 .log-row{display:grid;grid-template-columns:96px 14px minmax(0,210px) 1fr;column-gap:16px;align-items:center;height:32px;opacity:0}
@@ -152,26 +144,17 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
 .log-legend i{width:10px;height:10px;display:inline-block}
 .log-legend i.ej{background:var(--act-eject)}
 .log-legend i.bn{background:var(--act-bounce)}
-.log-caption{max-width:62ch;margin:26px auto 0;text-align:center;font-size:14px;color:var(--g5);line-height:1.6}
 
-/* boundary, its own full band */
-.boundary{background:var(--g6);color:var(--g1);padding:150px 0}
-.boundary h2{color:var(--g0)}
-.boundary .lead{color:var(--g3)}
+/* the boundary now opens the log section, so it sits on the light band and
+   the log stays the only dark object in it */
 .bwrap{text-align:center;position:relative}
-.ball{width:170px;height:170px;border-radius:50%;background:transparent;border:1px solid var(--g4);display:grid;place-items:center;font:400 11px/1.5 var(--mono);color:var(--g4);text-align:center;margin:0 auto 44px}
-.chips{display:flex;gap:12px;justify-content:center;margin-top:44px;flex-wrap:wrap}
-.chip{font:600 14px/1 var(--mono);padding:14px 20px;letter-spacing:0.06em;border:1px solid var(--g5);color:var(--g1)}
+.ball{width:140px;height:140px;border-radius:50%;background:transparent;border:1px solid var(--g4);display:grid;place-items:center;font:400 11px/1.5 var(--mono);color:var(--g5);text-align:center;margin:0 auto 44px}
+.chips{display:flex;gap:12px;justify-content:center;margin-top:38px;flex-wrap:wrap}
+.chip{font:600 13px/1 var(--mono);padding:12px 17px;letter-spacing:0.06em;border:1px solid var(--g4);color:var(--g6)}
 
 .spec{list-style:none;padding:0;margin:38px auto 0;max-width:58ch;text-align:left}
 .spec li{display:grid;grid-template-columns:10px 1fr;gap:16px;padding:15px 0;border-bottom:1px solid var(--g3);font-size:15px;line-height:1.55}
 .spec li::before{content:"";width:7px;height:7px;background:var(--g4);margin-top:9px}
-
-.sheet{display:grid;grid-template-columns:repeat(3,1fr);margin-top:56px;border-top:1px solid var(--g4);border-left:1px solid var(--g4)}
-.cell{border-right:1px solid var(--g4);border-bottom:1px solid var(--g4);padding:28px 22px;text-align:left;background:var(--g0)}
-.cell .k{font:400 12px/1 var(--mono);color:var(--g5);letter-spacing:0.04em}
-.cell .v{font-family:var(--sans);font-weight:600;font-size:clamp(28px,3.6vw,42px);line-height:1;letter-spacing:-0.02em;margin-top:16px;color:var(--g4)}
-.cell .s{font:400 12px/1.55 var(--mono);color:var(--g5);margin-top:14px}
 
 .people{display:flex;gap:48px;justify-content:center;margin-top:46px;flex-wrap:wrap}
 .person{width:230px;text-align:center}
@@ -186,11 +169,11 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
 /* CTA band, deliberately separated */
 .cta{background:var(--g6);color:var(--g1);padding:140px 0;text-align:center}
 .cta h2{color:var(--g0)}
-.cta .price{font-family:var(--sans);font-weight:600;font-size:clamp(48px,8vw,86px);letter-spacing:-0.03em;line-height:1;color:var(--g3);margin-top:26px}
-.cta .price small{font-family:var(--mono);font-weight:400;font-size:16px;letter-spacing:0;color:var(--g4)}
 .cta .sub{color:var(--g3);margin-top:20px}
 .cta .btns{margin-top:40px}
-.cta .fine{font-size:13px;color:var(--g4);margin-top:26px}
+.cta .fine{font-size:13px;color:var(--g4);margin-top:52px}
+.cta .btn-quiet{color:var(--g1);border-color:var(--g5)}
+.cta .btn-quiet:hover{border-color:var(--g3)}
 
 .egg{padding:90px 0;background-image:radial-gradient(var(--g3) 1.5px,transparent 1.5px);background-size:32px 32px;text-align:center}
 .egg a{display:inline-block;background:var(--g6);color:var(--g1);font:600 18px/1 var(--mono);padding:22px 34px;text-decoration:underline}
@@ -199,10 +182,119 @@ header{position:sticky;top:0;z-index:40;background:var(--g1);border-bottom:1px s
 footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--g5)}
 .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 
-.tag{display:inline-block;font:600 11px/1 var(--mono);padding:4px 6px;background:var(--g6);color:var(--g0);vertical-align:middle;letter-spacing:0.03em}
-.tag.prop{background:transparent;color:var(--g5);border:1px solid var(--g4)}
-.tag.src{background:transparent;color:var(--g4);border:1px dotted var(--g4)}
-.boundary .tag,.cta .tag{background:var(--g1);color:var(--g6)}
+/* ---- the controller: three tabs, one panel at a time ---------------------
+   No auto-advance, no dots, no transition on the swap. The tabs are the
+   only interaction on the page, so they look like buttons and nothing else.
+   ------------------------------------------------------------------------- */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--g3)}
+.tab{
+  font:600 14px/1.3 var(--mono);background:transparent;color:var(--g5);
+  border:0;border-bottom:2px solid transparent;margin-bottom:-1px;
+  padding:16px 14px;cursor:pointer;text-align:center;
+  position:relative;overflow:hidden;display:grid;place-items:center;
+}
+.tab[aria-selected="true"]{color:var(--g6);border-bottom-color:var(--g6)}
+.tab:focus-visible{outline:2px solid var(--g5);outline-offset:-4px}
+/* the dwell made visible: a second copy of the label on a dark ground,
+   revealed left to right while this tab holds the floor. Same box, same
+   padding, same centring as the label under it, so nothing shifts. */
+.tab .fill{
+  position:absolute;inset:0;padding:16px 14px;
+  display:grid;place-items:center;
+  background:var(--g6);color:var(--g0);
+  clip-path:inset(0 100% 0 0);
+}
+.tabs.cycling .tab[aria-selected="true"] .fill{animation:tabfill 4400ms linear forwards}
+@keyframes tabfill{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.panel[hidden]{display:none}
+.panel{padding-top:44px}
+.stuck{font-family:var(--sans);font-weight:600;font-size:clamp(20px,2.2vw,28px);line-height:1.25;letter-spacing:-0.02em;margin:0;max-width:30ch}
+.result{font-family:var(--sans);font-size:17px;line-height:1.65;color:var(--g5);margin-top:16px;max-width:52ch}
+.sketch{margin-top:44px}
+.sketch svg{display:block;width:100%;height:auto}
+
+/* ---- the drawings move ---------------------------------------------------
+   Each one is a closed loop of 5s: the sequence runs to 54-74%, holds, then
+   every value cuts back to its 0% state at 90% and rests there until 100%.
+   0% and 100% are identical for every animated property, so the loop has no
+   seam and nothing fades in or out: every change is a cut.
+   The panels are display:none until their tab is picked, so a drawing also
+   restarts from zero each time its tab comes up.
+   a-on    hidden at rest, shown during the sequence
+   a-off   shown at rest, hidden during the sequence
+   a-flash hidden at rest, appears only in passing
+   -------------------------------------------------------------------------- */
+.sketch .a-on,.sketch .a-flash{opacity:0}
+.sketch .a-off{opacity:1}
+.sketch .a{animation-duration:5s;animation-iteration-count:infinite}
+.sketch .cur{transform-box:view-box;transform-origin:0 0}
+.sketch .hop{transform-box:view-box;transform-origin:0 0}
+
+@keyframes curP1{
+  0%,4%{transform:translate(520px,470px)}
+  14%{transform:translate(150px,168px)}
+  34%{transform:translate(150px,258px)}
+  54%,89.9%{transform:translate(150px,348px)}
+  90%,100%{transform:translate(520px,470px)}
+}
+@keyframes pick1{0%,13.9%{opacity:0}14%,33.9%{opacity:1}34%,100%{opacity:0}}
+@keyframes pick2{0%,33.9%{opacity:0}34%,53.9%{opacity:1}54%,100%{opacity:0}}
+@keyframes pick3{0%,53.9%{opacity:0}54%,89.9%{opacity:1}90%,100%{opacity:0}}
+@keyframes show1{0%,13.9%{opacity:0}14%,89.9%{opacity:1}90%,100%{opacity:0}}
+@keyframes show2{0%,33.9%{opacity:0}34%,89.9%{opacity:1}90%,100%{opacity:0}}
+@keyframes show3{0%,53.9%{opacity:0}54%,89.9%{opacity:1}90%,100%{opacity:0}}
+
+/* this pointer parks on the share button, which is where it starts, so the
+   loop closes on the cursor without a jump at all */
+@keyframes curP2{
+  0%,4%{transform:translate(620px,500px)}
+  14%{transform:translate(690px,232px)}
+  30%{transform:translate(360px,330px)}
+  44%{transform:translate(690px,332px)}
+  58%{transform:translate(360px,382px)}
+  74%,100%{transform:translate(620px,500px)}
+}
+@keyframes drop1{0%,13.9%{opacity:0}14%,29.9%{opacity:1}30%,100%{opacity:0}}
+@keyframes drop2{0%,43.9%{opacity:0}44%,57.9%{opacity:1}58%,100%{opacity:0}}
+@keyframes was1{0%,29.9%{opacity:1}30%,89.9%{opacity:0}90%,100%{opacity:1}}
+@keyframes now1{0%,29.9%{opacity:0}30%,89.9%{opacity:1}90%,100%{opacity:0}}
+@keyframes was2{0%,57.9%{opacity:1}58%,89.9%{opacity:0}90%,100%{opacity:1}}
+@keyframes now2{0%,57.9%{opacity:0}58%,89.9%{opacity:1}90%,100%{opacity:0}}
+@keyframes sent{0%,73.9%{opacity:0}74%,89.9%{opacity:1}90%,100%{opacity:0}}
+
+@keyframes curP3{
+  0%,44%{transform:translate(610px,545px)}
+  64%,89.9%{transform:translate(150px,492px)}
+  90%,100%{transform:translate(610px,545px)}
+}
+@keyframes hop{
+  0%,5%{transform:translate(0,0)}
+  13%,18%{transform:translate(120px,0)}
+  26%,31%{transform:translate(220px,-42px)}
+  39%,89.9%{transform:translate(340px,-86px)}
+  90%,100%{transform:translate(0,0)}
+}
+@keyframes turn0{0%,12.9%{opacity:1}13%,89.9%{opacity:0}90%,100%{opacity:1}}
+@keyframes turn1{0%,12.9%{opacity:0}13%,25.9%{opacity:1}26%,100%{opacity:0}}
+@keyframes turn2{0%,25.9%{opacity:0}26%,38.9%{opacity:1}39%,100%{opacity:0}}
+@keyframes turn3{0%,38.9%{opacity:0}39%,89.9%{opacity:1}90%,100%{opacity:0}}
+@keyframes agent{0%,63.9%{opacity:1}64%,89.9%{opacity:0}90%,100%{opacity:1}}
+@keyframes human{0%,63.9%{opacity:0}64%,89.9%{opacity:1}90%,100%{opacity:0}}
+
+.tiers{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--g5);margin-top:56px}
+.tier{background:var(--g6);padding:44px 34px;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.tier .tk{font:600 13px/1 var(--mono);letter-spacing:0.06em;color:var(--g3)}
+.tier .price{font-family:var(--sans);font-weight:600;font-size:clamp(30px,4vw,52px);line-height:1;letter-spacing:-0.02em;color:var(--g0);margin-top:26px}
+.tier .price s{color:var(--g4);text-decoration-thickness:2px;margin-right:8px}
+.tier .price small{font-family:var(--mono);font-weight:400;font-size:15px;letter-spacing:0;color:var(--g4)}
+.tier .fine{font-size:13px;color:var(--g4);margin-top:16px}
+.tier .btns{margin-top:32px}
+
+/* ---- footer, multi-column ---- */
+.footcols{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;padding-bottom:40px}
+.footcols h4{font:600 13px/1 var(--mono);margin:0 0 18px;color:var(--g6);letter-spacing:0.04em}
+.footcols a{display:block;color:var(--g5);text-decoration:none;padding:6px 0}
+.footcols a:hover{text-decoration:underline}
 
 /* below this the two columns collapse: the headings read as a list and the
    finished composition sits under them */
@@ -212,6 +304,8 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
   /* relative, not static: the layers are absolute and would otherwise
      escape to the nearest positioned ancestor */
   .stack{position:relative;margin-top:40px}
+  .stack.center{transform:none}
+  .beat.lead{display:none}
   .layer{transform:none}
   .story-end{padding-top:110px}
 }
@@ -222,15 +316,25 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
   .nav-links{display:none}
   .log{padding:24px 20px;font-size:12px}
   .log-row{grid-template-columns:62px 10px minmax(0,116px) 1fr;column-gap:10px}
-  .logband{padding:68px 0}
-  .boundary,.cta{padding:90px 0}
+  .logband,.cta{padding:90px 0}
   .ball{width:120px;height:120px}
-  .sheet{grid-template-columns:1fr}
+  .tab{padding:13px 6px;font-size:11px}
+  /* a 1000-unit drawing at phone width is unreadable, so it keeps a usable
+     size and scrolls inside its own box instead */
+  .sketch{overflow-x:auto}
+  .sketch svg{width:660px;max-width:none}
+  .tiers{grid-template-columns:1fr}
+  .footcols{grid-template-columns:1fr 1fr;gap:24px}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .log-row{opacity:1 !important}
-  .layer{transform:none !important;transition:none !important}
+  .layer,.stack.center{transform:none !important;transition:none !important}
+  .sketch .a{animation:none !important}
+  .sketch .a-on{opacity:1}
+  .sketch .a-off,.sketch .a-flash{opacity:0}
+  .sketch .cur{display:none}
+  .sketch .hop{transform:translate(340px,-86px)}
 }
 </style>
 </head>
@@ -253,13 +357,203 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 <!-- HERO -->
 <section class="hero">
   <div class="col center">
-    <h1>A long-running computer in the cloud that you control.</h1>
-    <p class="lead">Spin up a full machine, terminal and desktop, and see everything your agents touch.</p>
+    <h1>A replayable computer you can pass between humans and agents.</h1>
+    <p class="lead">A fully auditable cloud computer you can fork, observe, and govern.</p>
     <div class="btns">
       <a class="btn btn-primary" href="#start">Build &amp; launch →</a>
       <a class="btn btn-quiet" href="#click">See the machine</a>
     </div>
   </div>
+</section>
+
+<!-- THE CONTROLLER — three sessions, one panel at a time -->
+<section id="controller">
+  <div class="col center">
+    <h2>The controller gets passed around.</h2>
+    <p class="body dim" style="margin-top:20px">Three sessions. Someone different is driving in each one.</p>
+  </div>
+
+  <div class="wide" style="margin-top:58px">
+
+    <div class="tabs" role="tablist" aria-label="Three sessions">
+      <button class="tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true"><span>One-time setup</span><span class="fill" aria-hidden="true">One-time setup</span></button>
+      <button class="tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1"><span>Shareable computers</span><span class="fill" aria-hidden="true">Shareable computers</span></button>
+      <button class="tab" role="tab" id="tab-3" aria-controls="panel-3" aria-selected="false" tabindex="-1"><span>Agent-controlled computers</span><span class="fill" aria-hidden="true">Agent-controlled computers</span></button>
+    </div>
+
+    <!-- panel 1 ------------------------------------------------------- -->
+    <div class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1" tabindex="0">
+      <p class="stuck">Every machine is set up differently. Nothing runs the same way twice.</p>
+      <p class="result">Launch a ready image. Everyone gets the same one, every time.</p>
+
+      <div class="sketch">
+        <svg viewBox="0 0 1000 600" role="img" aria-label="The Pick your machine screen: a pointer works down a list of ready images, and each one shows what it contains once it is picked">
+          <g fill="none" stroke="#5E5C59" stroke-width="1.5">
+            <rect x="60" y="40" width="880" height="520" fill="#FFFFFF"/>
+            <line x1="60" y1="104" x2="940" y2="104"/>
+          </g>
+          <text x="92" y="82" font-family="ui-monospace,monospace" font-size="18" fill="#2B2A28">Pick your machine</text>
+
+          <g stroke="#CFCECB" stroke-width="1.5" fill="#F5F5F4">
+            <rect x="100" y="140" width="800" height="72"/>
+            <rect x="100" y="230" width="800" height="72"/>
+            <rect x="100" y="320" width="800" height="72"/>
+          </g>
+          <g fill="#FFFFFF" stroke="#2B2A28" stroke-width="2">
+            <rect class="a a-flash" style="animation-name:pick1" x="100" y="140" width="800" height="72"/>
+            <rect class="a a-flash" style="animation-name:pick2" x="100" y="230" width="800" height="72"/>
+            <rect class="a a-on"    style="animation-name:pick3" x="100" y="320" width="800" height="72"/>
+          </g>
+
+          <g fill="none" stroke="#9A9895" stroke-width="1.5">
+            <circle cx="136" cy="176" r="9"/><circle cx="136" cy="266" r="9"/><circle cx="136" cy="356" r="9"/>
+          </g>
+          <g fill="#2B2A28">
+            <g class="a a-flash" style="animation-name:pick1"><circle cx="136" cy="176" r="9" fill="none" stroke="#2B2A28" stroke-width="2"/><circle cx="136" cy="176" r="4.5"/></g>
+            <g class="a a-flash" style="animation-name:pick2"><circle cx="136" cy="266" r="9" fill="none" stroke="#2B2A28" stroke-width="2"/><circle cx="136" cy="266" r="4.5"/></g>
+            <g class="a a-on"    style="animation-name:pick3"><circle cx="136" cy="356" r="9" fill="none" stroke="#2B2A28" stroke-width="2"/><circle cx="136" cy="356" r="4.5"/></g>
+          </g>
+
+          <g font-family="ui-monospace,monospace" font-size="15" fill="#2B2A28">
+            <text x="172" y="171">base-desktop</text>
+            <text x="172" y="261">python-data</text>
+            <text x="172" y="351">node-web</text>
+          </g>
+          <g font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">
+            <text class="a a-on" style="animation-name:show1" x="172" y="193">desktop, Chrome, terminal</text>
+            <text class="a a-on" style="animation-name:show2" x="172" y="283">Python 3.12, pandas, Jupyter</text>
+            <text class="a a-on" style="animation-name:show3" x="172" y="373">Node 22, pnpm, Playwright</text>
+          </g>
+
+          <rect x="700" y="448" width="200" height="54" fill="#2B2A28"/>
+          <text x="800" y="481" font-family="ui-monospace,monospace" font-size="14" fill="#F5F5F4" text-anchor="middle">Launch</text>
+
+          <g class="cur a" style="animation-name:curP1;animation-timing-function:steps(9,end)">
+            <path d="M2 1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-4v1h1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v3H2z" fill="#2B2A28" transform="scale(1.7)"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- panel 2 ------------------------------------------------------- -->
+    <div class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" tabindex="0" hidden>
+      <p class="stuck">You debug someone else&rsquo;s machine over screenshots.</p>
+      <p class="result">Send one link and you are both on the same machine. In the browser or in Discord.</p>
+
+      <div class="sketch">
+        <svg viewBox="0 0 1000 600" role="img" aria-label="The Share this computer dialog: a pointer opens each dropdown, picks invited collaborators and allow control, then lands on the share button">
+          <rect x="230" y="50" width="540" height="500" fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5"/>
+          <text x="270" y="108" font-family="ui-monospace,monospace" font-size="18" fill="#2B2A28">Share this computer</text>
+          <text x="270" y="138" font-family="ui-monospace,monospace" font-size="13" fill="#5E5C59">Choose who can join this Discord Activity</text>
+
+          <text x="270" y="192" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">Who can join</text>
+          <rect x="270" y="206" width="460" height="50" fill="#F5F5F4" stroke="#9A9895" stroke-width="1.5"/>
+          <text class="a a-off" style="animation-name:was1" x="290" y="237" font-family="ui-monospace,monospace" font-size="14" fill="#5E5C59">Anyone with the link</text>
+          <text class="a a-on"  style="animation-name:now1" x="290" y="237" font-family="ui-monospace,monospace" font-size="14" fill="#2B2A28">Invited collaborators</text>
+          <path d="M694 226l10 10 10-10" fill="none" stroke="#5E5C59" stroke-width="1.5"/>
+
+          <text x="270" y="292" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">Access</text>
+          <rect x="270" y="306" width="460" height="50" fill="#F5F5F4" stroke="#9A9895" stroke-width="1.5"/>
+          <text class="a a-off" style="animation-name:was2" x="290" y="337" font-family="ui-monospace,monospace" font-size="14" fill="#5E5C59">View only</text>
+          <text class="a a-on"  style="animation-name:now2" x="290" y="337" font-family="ui-monospace,monospace" font-size="14" fill="#2B2A28">Allow control</text>
+          <path d="M694 326l10 10 10-10" fill="none" stroke="#5E5C59" stroke-width="1.5"/>
+
+          <rect x="404" y="470" width="120" height="50" fill="none" stroke="#9A9895" stroke-width="1.5"/>
+          <text x="464" y="501" font-family="ui-monospace,monospace" font-size="13" fill="#2B2A28" text-anchor="middle">Cancel</text>
+          <rect x="540" y="470" width="190" height="50" fill="#2B2A28"/>
+          <rect class="a a-on" style="animation-name:sent" x="536" y="466" width="198" height="58" fill="none" stroke="#2B2A28" stroke-width="2"/>
+          <text x="635" y="501" font-family="ui-monospace,monospace" font-size="12" fill="#F5F5F4" text-anchor="middle">Share with collaborators</text>
+
+          <g class="a a-flash" style="animation-name:drop1">
+            <rect x="270" y="258" width="460" height="138" fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5"/>
+            <rect x="271" y="304" width="458" height="46" fill="#E7E6E4"/>
+            <g font-family="ui-monospace,monospace" font-size="14" fill="#2B2A28">
+              <text x="290" y="287">Anyone with the link</text>
+              <text x="290" y="333">Invited collaborators</text>
+              <text x="290" y="379">Only me</text>
+            </g>
+          </g>
+          <g class="a a-flash" style="animation-name:drop2">
+            <rect x="270" y="358" width="460" height="92" fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5"/>
+            <rect x="271" y="359" width="458" height="45" fill="#E7E6E4"/>
+            <g font-family="ui-monospace,monospace" font-size="14" fill="#2B2A28">
+              <text x="290" y="387">Allow control</text>
+              <text x="290" y="433">View only</text>
+            </g>
+          </g>
+
+          <g class="cur a" style="animation-name:curP2;animation-timing-function:steps(9,end)">
+            <path d="M2 1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-4v1h1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v3H2z" fill="#2B2A28" transform="scale(1.7)"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- panel 3 ------------------------------------------------------- -->
+    <div class="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" tabindex="0" hidden>
+      <p class="stuck">You can give an agent a goal. You cannot see what it did to get there.</p>
+      <p class="result">Set the goal, then take the controls back whenever you want. Works with Claude Code, Codex, or your own scripts.</p>
+
+      <div class="sketch">
+        <svg viewBox="0 0 1000 600" role="img" aria-label="An agent session: the goal is set, the hamster ball works its way along the course while the turn counter climbs, then a pointer takes the controls back">
+          <rect x="40" y="40" width="560" height="520" fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5"/>
+          <rect x="40" y="40" width="560" height="52" fill="#E7E6E4" stroke="#5E5C59" stroke-width="1.5"/>
+          <text class="a a-off" style="animation-name:agent" x="66" y="73" font-family="ui-monospace,monospace" font-size="13" fill="#2B2A28">Agent is playing</text>
+          <text class="a a-on"  style="animation-name:human" x="66" y="73" font-family="ui-monospace,monospace" font-size="13" fill="#2B2A28">You are playing</text>
+
+          <rect x="72" y="126" width="496" height="310" fill="#F5F5F4" stroke="#CFCECB" stroke-width="1.5"/>
+          <g fill="#9A9895">
+            <rect x="96" y="398" width="200" height="6"/>
+            <rect x="300" y="356" width="110" height="6"/>
+            <rect x="414" y="312" width="110" height="6"/>
+          </g>
+          <g stroke="#5E5C59" stroke-width="1.5" fill="none">
+            <line x1="520" y1="312" x2="520" y2="262"/>
+            <path d="M520 266h26l-9 11 9 11h-26z" fill="#CFCECB"/>
+          </g>
+          <g class="hop a" style="animation-name:hop;animation-timing-function:steps(6,end)">
+            <circle cx="130" cy="380" r="18" fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5"/>
+            <circle cx="130" cy="384" r="8" fill="#9A9895"/>
+            <circle cx="125" cy="374" r="2.5" fill="#5E5C59"/>
+            <circle cx="135" cy="374" r="2.5" fill="#5E5C59"/>
+          </g>
+
+          <rect x="72" y="472" width="176" height="50" fill="none" stroke="#5E5C59" stroke-width="1.5"/>
+          <text class="a a-off" style="animation-name:agent" x="160" y="503" font-family="ui-monospace,monospace" font-size="13" fill="#2B2A28" text-anchor="middle">Take control</text>
+          <text class="a a-on"  style="animation-name:human" x="160" y="503" font-family="ui-monospace,monospace" font-size="13" fill="#2B2A28" text-anchor="middle">Resume agent</text>
+          <rect x="264" y="472" width="160" height="50" fill="none" stroke="#5E5C59" stroke-width="1.5"/>
+          <text x="344" y="503" font-family="ui-monospace,monospace" font-size="13" fill="#2B2A28" text-anchor="middle">Checkpoints</text>
+
+          <rect x="630" y="40" width="330" height="520" fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5"/>
+          <text x="654" y="78" font-family="ui-monospace,monospace" font-size="14" fill="#2B2A28">Chat with Computer</text>
+          <line x1="630" y1="100" x2="960" y2="100" stroke="#CFCECB" stroke-width="1.5"/>
+
+          <rect x="654" y="128" width="282" height="150" fill="#F5F5F4" stroke="#CFCECB" stroke-width="1.5"/>
+          <text x="674" y="156" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">Goal</text>
+          <g font-family="ui-monospace,monospace" font-size="12" fill="#2B2A28">
+            <text x="674" y="188">Get the ball to the end of</text>
+            <text x="674" y="210">level 3 without falling off</text>
+          </g>
+
+          <g font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">
+            <text class="a a-off"   style="animation-name:turn0" x="654" y="330">0 of 20 turns</text>
+            <text class="a a-flash" style="animation-name:turn1" x="654" y="330">5 of 20 turns</text>
+            <text class="a a-flash" style="animation-name:turn2" x="654" y="330">11 of 20 turns</text>
+            <text class="a a-on"    style="animation-name:turn3" x="654" y="330">16 of 20 turns</text>
+          </g>
+
+          <rect x="654" y="360" width="130" height="48" fill="#2B2A28"/>
+          <text x="719" y="390" font-family="ui-monospace,monospace" font-size="13" fill="#F5F5F4" text-anchor="middle">Resume</text>
+
+          <g class="cur a" style="animation-name:curP3;animation-timing-function:steps(9,end)">
+            <path d="M2 1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-4v1h1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v3H2z" fill="#2B2A28" transform="scale(1.7)"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <!-- MINUTE ZERO: the one-click story -->
@@ -350,17 +644,29 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
   </svg>
 
   <div class="story-open">
-    <h2>Nothing to install, nothing to set up.</h2>
-    <div class="hamster">hamster<br>illustration<br>placeholder</div>
+    <h2>One click, and the machine is running.</h2>
   </div>
 
   <div class="collect">
 
     <div class="collect-text">
-      <div class="beat"><h3>The machine starts and<br>opens in your browser:</h3></div>
-      <div class="beat"><h3>One click, and you<br>have a desktop.</h3></div>
-      <div class="beat"><h3>Chrome, running<br>on the machine.</h3></div>
-      <div class="beat"><h3>And a terminal,<br>when you want one.</h3></div>
+      <div class="beat lead" aria-hidden="true"></div>
+      <div class="beat">
+        <h3>It starts in<br>a browser tab.</h3>
+        <p>No download, no install, nothing to configure first.</p>
+      </div>
+      <div class="beat">
+        <h3>Inside is<br>a full desktop.</h3>
+        <p>Files, windows, a dock. All of it running on the machine, not on your laptop.</p>
+      </div>
+      <div class="beat">
+        <h3>Chrome runs<br>on the machine.</h3>
+        <p>So you can watch every page your agent opens, while it opens it.</p>
+      </div>
+      <div class="beat">
+        <h3>And a terminal,<br>when you want one.</h3>
+        <p>Same machine, same state, whichever way you decide to drive it.</p>
+      </div>
     </div>
 
     <div class="collect-frame">
@@ -374,87 +680,47 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
   </div>
 
   <div class="story-end">
-    <p>Your laptop can do most of this.<br>Close the lid and it stops.<br>Hand it to someone else and nothing matches.</p>
-    <div class="hamster">hamster<br>illustration<br>placeholder</div>
+    <h2>One tab. The whole machine.</h2>
+    <ul class="spec">
+      <li>A full desktop and a terminal, both in the browser</li>
+      <li>Save and load the machine's state with checkpoints, or fork it and try both ways</li>
+      <li>Every action that crosses the boundary is recorded, and can be undone</li>
+      <li>Share a machine with one link, to watch or to take over</li>
+      <li>Launch into a ready image, identical every time</li>
+    </ul>
   </div>
 
 </section>
 
-<!-- THE SESSION -->
+<!-- THE BOUNDARY, and the log that shows it working -->
 <div class="logband">
-  <div class="col center">
-    <h2>Every course starts the same way.</h2>
+  <div class="col bwrap center">
+    <div class="ball">hamster<br>in ball</div>
+    <h2>Agent-World Boundary</h2>
     <p class="body dim" style="margin-top:20px">
-      Two weeks fixing everyone's environment before anyone writes code.
+      Every action is observed. Every effect is mediated.
+      You remain in control with governance, provenance, rollback, and more.
     </p>
-    <p class="body" style="margin-top:18px">
-      OneWill gives everyone the same machine. Everything your agent reads or writes has to cross the boundary first, so you can see all of it.
-    </p>
+    <div class="chips"><span class="chip">OBSERVE</span><span class="chip">MEDIATE</span><span class="chip">CONTROL</span></div>
   </div>
 
-  <div class="wide" style="margin-top:52px">
+  <div class="wide" style="margin-top:76px">
     <div class="log" id="log">
-      <div class="log-head"><span>boundary log</span><span>R undo last</span></div>
+      <div class="log-head"><span>boundary log · golden-maple-lantern</span><span>R undo last</span></div>
       <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>read ./data.csv</span><span>ejected on expand</span></div>
-      <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>credentials.json</span><span>ejected on expand</span></div>
-      <div class="log-row"><span class="t">10:33:12</span><i class="sq bn"></i><span>credentials.json</span><span>bounced</span></div>
-      <div class="log-row"><span class="t">10:33:13</span><i class="sq bn"></i><span>credentials.json</span><span>bounced</span></div>
-      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>homework.pdf</span><span>bounced</span></div>
-      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>autograder</span><span>bounced</span></div>
-      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>credentials.json</span><span>bounced</span></div>
-      <div class="log-row"><span class="t">10:33:14</span><i class="sq ej"></i><span>homework.pdf</span><span>ejected on expand</span></div>
+      <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>.env</span><span>ejected on expand</span></div>
+      <div class="log-row"><span class="t">10:33:12</span><i class="sq bn"></i><span>.env</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:13</span><i class="sq bn"></i><span>.env</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>~/.ssh/id_rsa</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>git push origin main</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq bn"></i><span>.env</span><span>bounced</span></div>
+      <div class="log-row"><span class="t">10:33:14</span><i class="sq ej"></i><span>pytest ./tests</span><span>ejected on expand</span></div>
       <div class="log-row"><span class="t">10:33:16</span><i class="sq ej"></i><span>docker build</span><span>ejected on expand</span></div>
       <div class="log-row"><span class="t">10:33:17</span><i class="sq ej"></i><span>curl api.openai.com</span><span>ejected on expand</span></div>
       <div class="log-legend"><span><i class="ej"></i>ejected on expand</span><span><i class="bn"></i>bounced</span></div>
     </div>
   </div>
 
-</div>
-
-<!-- WHAT YOU GET -->
-<section id="spec">
-  <div class="col center">
-    <h2>What you get</h2>
-    <ul class="spec">
-      <li>A full desktop and a terminal, both in the browser</li>
-      <li>Chrome runs on the machine, so you can watch the agent browse</li>
-      <li>Run whatever you already use: Claude Code, Codex, your own scripts</li>
-      <li>Send one link and someone else sees your screen, or takes over</li>
-      <li>The same setup every time, so the autograder behaves the same for everyone</li>
-      <li>The machine stays up when you close the tab</li>
-    </ul>
-
-    <div class="sheet">
-      <div class="cell">
-        <div class="k">boot time</div>
-        <div class="v">00s <span class="tag">TO CONFIRM</span></div>
-        <div class="s">From clicking build to a usable desktop.</div>
-      </div>
-      <div class="cell">
-        <div class="k">uptime</div>
-        <div class="v">00.0% <span class="tag">TO CONFIRM</span></div>
-        <div class="s">Over what period, and counted since when.</div>
-      </div>
-      <div class="cell">
-        <div class="k">preinstalled environments</div>
-        <div class="v">00 <span class="tag">TO CONFIRM</span></div>
-        <div class="s">Ready-made setups you can launch straight into.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- BOUNDARY, full band -->
-<div class="boundary">
-  <div class="col bwrap">
-    <div class="ball">hamster<br>in ball</div>
-    <h2 class="big">Agent-World Boundary</h2>
-    <p class="lead big" style="max-width:46ch;margin:26px auto 0">
-      Every action is observed. Every effect is mediated.
-      You remain in control with governance, provenance, rollback, and more.
-    </p>
-    <div class="chips"><span class="chip">OBSERVE</span><span class="chip">MEDIATE</span><span class="chip">CONTROL</span></div>
-  </div>
 </div>
 
 <!-- TEAM -->
@@ -482,7 +748,6 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
     </div>
 
     <p class="body dim" style="margin-top:40px;font-size:15px">
-      <span class="tag src">FROM onewill.ai</span>
       Advised by Andy Pavlo, CMU professor.
     </p>
 
@@ -497,11 +762,32 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 <div class="cta" id="start">
   <div class="col">
     <h2 class="big">Start</h2>
-    <p class="price">$20<small> / month</small> <span class="tag">TO CONFIRM</span></p>
     <p class="body sub">Sign in and the machine is yours.</p>
-    <div class="btns"><a class="btn btn-invert" href="#">Build &amp; launch →</a></div>
-    <p class="fine">Ask us anything on Discord.</p>
+
+    <div class="tiers">
+      <div class="tier">
+        <div class="tk">INDIVIDUAL</div>
+        <p class="price"><s>$25</s> $0<small> / month</small></p>
+        <p class="fine">Free while in open beta</p>
+        <div class="btns"><a class="btn btn-invert" href="#">Build &amp; launch →</a></div>
+      </div>
+      <div class="tier">
+        <div class="tk">ENTERPRISE</div>
+        <p class="price">Custom<small> pricing</small></p>
+        <p class="fine">Talk to us about your setup</p>
+        <div class="btns"><a class="btn btn-invert" href="#">Contact us</a></div>
+      </div>
+    </div>
+
+    <p class="fine">Ask us anything.</p>
+    <div class="btns" style="margin-top:18px">
+      <a class="btn btn-quiet btn-icon" href="#">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 00.031.056 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.042-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.009c.12.099.246.198.373.292a.077.077 0 01-.006.128 12.3 12.3 0 01-1.873.891.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.029 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.055c.5-5.177-.838-9.674-3.549-13.661a.061.061 0 00-.031-.029zM8.02 15.331c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.211 0 2.176 1.095 2.157 2.42 0 1.332-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.332-.946 2.418-2.157 2.418z"/></svg>
+        Join our Discord
+      </a>
+    </div>
   </div>
+
 </div>
 
 <!-- EASTER EGG -->
@@ -514,12 +800,96 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 
 </main>
 
-<footer><div class="col foot"><span>OneWill</span><span>Wireframe v3.3 · not final copy</span></div></footer>
+<footer>
+  <div class="wide footcols">
+    <div>
+      <h4>Product</h4>
+      <a href="#">Pricing</a><a href="#">Changelog</a><a href="#">Status</a>
+    </div>
+    <div>
+      <h4>Docs</h4>
+      <a href="#">Quickstart</a><a href="#">API</a><a href="#">CLI</a>
+    </div>
+    <div>
+      <h4>Community</h4>
+      <a href="#">Discord</a><a href="#">GitHub</a><a href="#">Blog</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="#">Team</a><a href="#">Careers</a><a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="col foot" style="margin-top:22px"><span>OneWill</span><span>Wireframe v4</span></div>
+</footer>
 
 <script>
 (function(){
 'use strict';
 var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* =============================================================
+   THE CONTROLLER — three tabs, one panel at a time. It cycles on
+   its own so the third panel is not a secret, and stops for good
+   the moment anyone picks a tab themselves. Off-screen and under
+   reduced motion it does not run at all.
+   The panels are display:none when hidden, so each drawing's
+   animation restarts from zero every time its tab comes up.
+   ============================================================= */
+var DWELL = 4400;
+var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+var panels = tabs.map(function(t){ return document.getElementById(t.getAttribute('aria-controls')); });
+var tablist = document.querySelector('.tabs');
+var cur = 0, cycleTimer = null, cycleOn = !reduce, tabsSeen = false;
+
+function selectTab(i, focus){
+  cur = i;
+  tabs.forEach(function(t, n){
+    var on = n === i;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    panels[n].hidden = !on;
+  });
+  if (focus) tabs[i].focus();
+}
+function cycleStart(){
+  if (cycleOn && tabsSeen && !cycleTimer){
+    cycleTimer = setInterval(function(){ selectTab((cur + 1) % tabs.length, false); }, DWELL);
+    tablist.classList.add('cycling');   /* only then do the tabs fill */
+  }
+}
+function cycleStop(){
+  if (cycleTimer){ clearInterval(cycleTimer); cycleTimer = null; }
+  tablist.classList.remove('cycling');
+}
+/* once someone drives it themselves, it never takes the wheel back */
+function handOver(){ cycleOn = false; cycleStop(); }
+
+tabs.forEach(function(t, i){
+  t.addEventListener('click', function(){ handOver(); selectTab(i, false); });
+  t.addEventListener('keydown', function(e){
+    var k = e.key, j = -1;
+    if (k === 'ArrowRight') j = (i + 1) % tabs.length;
+    else if (k === 'ArrowLeft') j = (i - 1 + tabs.length) % tabs.length;
+    else if (k === 'Home') j = 0;
+    else if (k === 'End') j = tabs.length - 1;
+    if (j > -1){ e.preventDefault(); handOver(); selectTab(j, true); }
+  });
+});
+
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      tabsSeen = e.isIntersecting;
+      if (tabsSeen) cycleStart(); else cycleStop();
+    });
+  /* a ratio threshold is no good here: the section is taller than the window
+     on a phone, so 20% of it can never be on screen at once. This asks a
+     plainer question instead, does the section overlap the middle of the
+     window, which holds at any height. */
+  }, { rootMargin: '-10% 0px -10% 0px' }).observe(document.getElementById('controller'));
+} else {
+  tabsSeen = true; cycleStart();
+}
 
 /* =============================================================
    HERO LOOP — canvas stand-in for the boundary loop video.
@@ -606,26 +976,45 @@ if ('IntersectionObserver' in window){
     });
   }, { threshold: 0.05 }).observe(hero);
 }
-window.addEventListener('resize', function(){ sizeCanvas(); seed(); drawHero(); });
+window.addEventListener('resize', function(){ sizeCanvas(); seed(); drawHero(); measureShift(); });
 
 /* =============================================================
-   ONE-CLICK STORY — the four layers share one frame and latch up
-   into it as their heading passes a line in the middle of the
-   window. IntersectionObserver only: scroll position is never read
-   or written, and scrolling back takes the layers out again.
+   ONE-CLICK STORY — the frame opens centred, slides into the right
+   column on the first beat, then the layers latch up into it one per
+   beat. IntersectionObserver only: scroll position is never read or
+   written, and scrolling back takes it all out again.
    ============================================================= */
 var layers = Array.prototype.slice.call(document.querySelectorAll('.layer'));
 var beats  = Array.prototype.slice.call(document.querySelectorAll('.beat'));
+var stack  = document.querySelector('.stack');
+var collectEl = document.querySelector('.collect');
+var frameEl = document.querySelector('.collect-frame');
+
+/* how far left the frame has to sit to be centred over the whole row:
+   half the text column plus the gap. Measured, because the column is a
+   percentage of the container and the frame is a percentage of the track. */
+function measureShift(){
+  var cs = getComputedStyle(collectEl);
+  var inner = collectEl.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  var shift = inner - frameEl.clientWidth;
+  collectEl.style.setProperty('--shift', (shift > 0 ? shift : 0) + 'px');
+}
 function showLayers(n){
   layers.forEach(function(l, i){ l.classList.toggle('on', i <= n); });
 }
+/* beat 0 is the empty lead: frame centred, nothing built on it yet */
+function setBeat(i){
+  stack.classList.toggle('center', i === 0);
+  showLayers(Math.max(0, i - 1));
+}
+measureShift();
 if (reduce || !('IntersectionObserver' in window)){
   showLayers(layers.length - 1);
 } else {
-  showLayers(0);
+  setBeat(0);
   var storyIO = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
-      if (e.isIntersecting) showLayers(beats.indexOf(e.target));
+      if (e.isIntersecting) setBeat(beats.indexOf(e.target));
     });
   }, { rootMargin: '-52% 0px -47% 0px' });   /* a thin band mid-window */
   beats.forEach(function(b){ storyIO.observe(b); });

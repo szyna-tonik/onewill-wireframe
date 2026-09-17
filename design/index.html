@@ -15,6 +15,7 @@
   --cream:#FFE4B8;
   --paper:#FCF6E9;
   --glint:#FFFCF5;
+  --shade:#F0D0A6;
   --glow:#FF9B31;
   --fur:#F98912;
   --blush:#FF7D7D;
@@ -33,6 +34,7 @@
   --act-eject:#F98912;
   --act-bounce:#FF7D7D;
 
+  --navh:64px;
   --col:760px;
   --wide:1020px;
   --gut:24px;
@@ -42,8 +44,10 @@
 }
 
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--g1);color:var(--g6);font:400 16px/1.6 var(--mono)}
+/* the header is fixed, so in-page anchors have to stop below it */
+html{scroll-behavior:smooth;scroll-padding-top:var(--navh)}
+/* the padding is the seat the fixed header sits in, so nothing starts under it */
+body{margin:0;padding-top:var(--navh);background:var(--g1);color:var(--g6);font:400 16px/1.6 var(--mono)}
 
 /* type ramp, one class per Figma text style (desktop/t-*), values as coded
    in the file: headings 1-3 at 100%, 4-5 at 110%, body at 120%; -4% tracking
@@ -97,9 +101,9 @@ p{margin:0}
 /* pixel art never smooths */
 .px{shape-rendering:crispEdges;image-rendering:pixelated}
 
-/* ---- navbar ---------------------------------------------------------- */
-header{background:var(--paper)}
-.nav{max-width:1496px;margin:0 auto;height:64px;padding:12px 40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+/* ---- navbar: fixed, above the flying hamster and the story snow ------- */
+header{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--paper)}
+.nav{max-width:1496px;margin:0 auto;height:var(--navh);padding:12px 40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
 .brand{display:inline-flex;align-items:center;color:var(--ink)}
 .brand svg{display:block;flex:none;width:143px;height:32px}
 .nav-links{display:flex;gap:40px;justify-content:center}
@@ -112,26 +116,51 @@ header{background:var(--paper)}
 .nav-right .link:hover{text-decoration:underline;text-underline-offset:4px}
 .nav-right .btn{height:40px}
 
+/* ---- the fly zone: the hero plus the band beside the controller --------
+   One Paper field the hamster can roam. The controller's background is
+   narrowed to the width of the navbar's items, so on a wide screen there is
+   a Paper corridor down each side of it for the hamster to wander into. */
+.flyzone{position:relative;background:var(--paper)}
+.flyzone.fly{overflow:hidden}
+
 /* ---- hero: Paper, centred, the hamster ball straddles the seam -------- */
-.hero{position:relative;background:var(--paper);padding:80px 0 0;text-align:center}
+/* 10% taller than the copy alone needs: room for the hamster, and the Cream
+   band under it still shows a strip on the fold */
+.hero{position:relative;z-index:2;padding:80px 0 64px;text-align:center}
 .hero .col{max-width:calc(698px + 2 * var(--gut))}
 .hero h1{color:var(--ink)}
 .hero .sub{color:var(--ink);margin:32px auto 0;max-width:698px}
 .hero .btns{margin-top:32px}
 .hero-hamster{display:block;width:203px;height:203px;margin:78px auto -38px;position:relative;z-index:2}
+/* the hero hamster flies (the script adds .fly): the still SVG keeps holding
+   the layout — and the whole show under reduced motion — while the canvas is
+   the flight space, under the copy so the text always reads */
+.hero .col{position:relative;z-index:2}
+/* both cover the whole zone, not just the hero */
+.hero-canvas{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero-tips{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.hero-tips span{position:absolute;font:500 11px/1 var(--mono);padding:4px 6px;white-space:nowrap}
+.flyzone.fly .hero-hamster{visibility:hidden}
 
 /* ---- the controller ---------------------------------------------------
    Cream band. Heading block, then one card holding the tabs, the copy and
    a browser window with the drawing. Two more cards sit behind it, each
    10px further down-right, which is how Figma draws the shadow.
    ------------------------------------------------------------------------- */
-.controller{background:var(--cream);padding:144px 0 144px;position:relative;overflow:hidden}
+.controller{
+  background:var(--cream);padding:144px 0 144px;position:relative;z-index:2;overflow:hidden;
+  /* as wide as the navbar's items: nav is max 1496 with 40px of padding */
+  width:min(1416px,calc(100% - 80px));margin-inline:auto;
+}
 .controller .col{max-width:calc(800px + 2 * var(--gut))}
 .controller h2{color:var(--ink)}
 .controller .sub{color:var(--ink);margin-top:24px}
 .card-wrap{width:100%;max-width:calc(1176px + 2 * var(--gut));margin:60px auto 0;padding:0 var(--gut)}
 /* one fixed box: 1176 x 548 on desktop, nothing inside may grow it */
-.card{position:relative;background:var(--cream);border:2px solid var(--ink)}
+/* the card sits on two hard offset copies, as in the Figma frame: Cream at
+   +10,+10 (invisible on the Cream section, it just holds the gap) and sand
+   at +20,+20. --shade is that sand: not a brand colour, picked in the frame */
+.card{position:relative;background:var(--cream);border:2px solid var(--ink);box-shadow:10px 10px 0 var(--cream),20px 20px 0 var(--shade)}
 @media (min-width:1000px){.card{height:548px}}
 
 
@@ -162,9 +191,9 @@ header{background:var(--paper)}
 .panel[hidden]{display:none}
 /* copy + hamster on the left, the drawing on the right, all inside the box */
 .panel{display:grid;grid-template-columns:426px minmax(0,1fr);column-gap:40px;padding:60px 40px 42px;height:calc(100% - 50px)}
-.side{display:flex;flex-direction:column;padding-top:25px}
+.side{display:flex;flex-direction:column;height:380px;padding-top:33px}
 .stuck{color:var(--ink);margin:0}
-.result{color:var(--ink);margin-top:24px}
+.result{color:var(--ink);margin-top:auto;margin-bottom:36px}
 .stage{position:relative;width:570px;height:380px;justify-self:end}
 
 /* the browser window ----------------------------------------------------- */
@@ -207,8 +236,8 @@ header{background:var(--paper)}
 .pick .image.is-picked .lbl{transform:translateY(-7px)}
 /* footer: button and boot bar share one 41px row */
 .pick .win-foot{position:relative;height:41px;margin-top:24px}
-.pick .launch{position:absolute;right:0;top:0;height:41px;padding:0 24px;display:inline-flex;align-items:center;background:var(--ink);color:var(--cream);font:600 13px/1 var(--mono);box-shadow:3px 3px 0 var(--cocoa);transform:translate(-3px,-3px)}
-.pick .launch.is-down{transform:translate(0,0);box-shadow:0 0 0 var(--cocoa)}
+.pick .launch{position:absolute;right:0;top:0;height:41px;padding:0 24px;display:inline-flex;align-items:center;background:var(--glow);color:var(--ink);font:600 13px/1 var(--mono);box-shadow:3px 3px 0 var(--ink);transform:translate(-3px,-3px)}
+.pick .launch.is-down{transform:translate(0,0);box-shadow:0 0 0 var(--ink)}
 .pick .boot{position:absolute;inset:0;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:16px;opacity:0}
 .pick .track{height:14px;border:1px solid var(--ink);padding:2px;display:grid;grid-template-columns:repeat(16,1fr);gap:2px;background:var(--glint)}
 .pick .track i{background:var(--glow);opacity:0}
@@ -216,7 +245,7 @@ header{background:var(--paper)}
 .pick .boot .msg span{position:absolute;right:0;top:0;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .pick .boot .msg svg{width:12px;height:12px}
 /* the pointer: the brand glyph, plus a four-pixel spark on every click */
-.pick .cur,.shr .cur,.agt .cur{width:22px;height:28px}
+.pick .cur,.shr .cur,.agt .cur{width:23px;height:23px}
 .pick .spark,.shr .spark,.agt .spark{position:absolute;left:-6px;top:-6px;width:24px;height:24px;opacity:0}
 .pick .spark i,.shr .spark i,.agt .spark i{position:absolute;width:4px;height:4px;background:var(--glow)}
 .pick .spark i:nth-child(1),.shr .spark i:nth-child(1),.agt .spark i:nth-child(1){left:10px;top:0}
@@ -225,7 +254,7 @@ header{background:var(--paper)}
 .pick .spark i:nth-child(4),.shr .spark i:nth-child(4),.agt .spark i:nth-child(4){left:10px;top:20px}
 
 /* the cursor is the same 14x18 pixel glyph as before, Ink */
-.cur{position:absolute;left:0;top:0;width:34px;height:43px;pointer-events:none}
+.cur{position:absolute;left:0;top:0;width:23px;height:23px;pointer-events:none}
 .cur svg{display:block;width:100%;height:100%}
 
 /* ---- panel 2: share this computer, drawn at 570 x 380 ------------------
@@ -256,7 +285,7 @@ header{background:var(--paper)}
 .shr .dlg-foot{position:relative;height:37px}
 .shr .btns{position:absolute;right:0;top:3px;display:flex;gap:10px}
 .shr .cancel{height:34px;padding:0 16px;display:inline-flex;align-items:center;color:var(--ink);font:600 13px/1 var(--mono);box-shadow:inset 0 0 0 1px var(--ink)}
-.shr .go{height:34px;padding:0 20px;display:inline-flex;align-items:center;background:var(--ink);color:var(--cream);font:600 13px/1 var(--mono);box-shadow:3px 3px 0 var(--cocoa);transform:translate(-3px,-3px)}
+.shr .go{height:34px;padding:0 20px;display:inline-flex;align-items:center;background:var(--glow);color:var(--ink);font:600 13px/1 var(--mono);box-shadow:3px 3px 0 var(--ink);transform:translate(-3px,-3px)}
 .shr .link{position:absolute;inset:3px 0 0 0;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:14px;opacity:0}
 .shr .link .box{height:34px;padding:0 12px;display:flex;align-items:center;border:1px solid var(--ink);background:var(--cream);color:var(--ink);font:400 12px/1 var(--mono);white-space:nowrap;overflow:hidden}
 .shr .link .box span{display:inline-block;clip-path:inset(0 100% 0 0)}
@@ -306,7 +335,7 @@ header{background:var(--paper)}
 .agt .turns span:first-child{opacity:1}
 .agt .turns .done{color:var(--ink)}
 .agt .turns svg{width:12px;height:12px}
-.agt .resume{justify-self:start;height:32px;padding:0 16px;display:inline-flex;align-items:center;background:var(--ink);color:var(--cream);font:600 12px/1 var(--mono);box-shadow:3px 3px 0 var(--cocoa);transform:translate(-3px,-3px)}
+.agt .resume{justify-self:start;height:32px;padding:0 16px;display:inline-flex;align-items:center;background:var(--glow);color:var(--ink);font:600 12px/1 var(--mono);box-shadow:3px 3px 0 var(--ink);transform:translate(-3px,-3px)}
 .agt .cur{z-index:3}
 
 /* ---- the drawings move ---------------------------------------------------
@@ -377,11 +406,11 @@ header{background:var(--paper)}
 /* Launch: hover lifts a pixel more, press drops it onto its shadow, then it
    hands the row to the boot bar */
 @keyframes p1launch{
-  0%,69.9%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--cocoa);opacity:1}
+  0%,69.9%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--ink);opacity:1}
   70%,71.9%{transform:translate(-4px,-4px);box-shadow:4px 4px 0 var(--ink);opacity:1}
   72%,72.9%{transform:translate(0,0);box-shadow:0 0 0 var(--ink);opacity:1}
   73%,96.9%{transform:translate(0,0);box-shadow:0 0 0 var(--ink);opacity:0}
-  97%,100%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--cocoa);opacity:1}
+  97%,100%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--ink);opacity:1}
 }
 @keyframes p1boot{0%,72.9%{opacity:0}73%,96.9%{opacity:1}97%,100%{opacity:0}}
 @keyframes p1msgA{0%,72.9%{opacity:0}73%,88.9%{opacity:1}89%,100%{opacity:0}}
@@ -463,11 +492,11 @@ header{background:var(--paper)}
 /* Share: hover lifts a pixel more, press drops it onto its shadow, then the
    footer hands over to the link */
 @keyframes p2go{
-  0%,65.9%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--cocoa);opacity:1}
+  0%,65.9%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--ink);opacity:1}
   66%,67.9%{transform:translate(-4px,-4px);box-shadow:4px 4px 0 var(--ink);opacity:1}
   68%,68.9%{transform:translate(0,0);box-shadow:0 0 0 var(--ink);opacity:1}
   69%,87.9%{transform:translate(0,0);box-shadow:0 0 0 var(--ink);opacity:0}
-  88%,100%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--cocoa);opacity:1}
+  88%,100%{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--ink);opacity:1}
 }
 @keyframes p2cancel{0%,68.9%{opacity:1}69%,87.9%{opacity:0}88%,100%{opacity:1}}
 @keyframes p2link{0%,68.9%{opacity:0}69%,87.9%{opacity:1}88%,100%{opacity:0}}
@@ -519,19 +548,34 @@ header{background:var(--paper)}
   97.917%,100%{background:var(--glint);transform:translate(0,0);box-shadow:0 0 0 var(--ink)}
 }
 
-/* ---- the one-click story -------------------------------------------------
-   The browser frame opens centred, under the heading. On the first beat it
-   slides across into the right-hand column, and from there the illustration
-   builds a layer per beat, ending as a single composition.
-   --pin    how far below the header the frame sits
-   --shift  text column + gap, measured once in JS: half of it is how far
-            left the frame sits while it is still centred
-   -------------------------------------------------------------------------- */
-.story{padding:0}
+/* ---- the one-click story, designed ---------------------------------------
+   Paper band with the same pixel snow as the hero (no labels here). The
+   machine (a pixel browser frame, 1000x640 with the stepped shadow) opens
+   centred with the heading and a Start button inside it; Start scrolls to
+   the first beat. From there the frame docks right and steps down a size so
+   the copy column breathes, and each beat latches one layer into the
+   composition. On the last beat the contents ride up out of the frame, the
+   closing copy takes their place inside it and the machine grows back to the
+   size it opened at. The stack rides sticky at the vertical middle of the
+   window and every beat's copy fills the same height, so illustration and
+   text stay level.
+   --shift     text column + gap, measured in JS: half of it is how far left
+               the frame sits while it is still centred
+   --machineh  the frame's visual height, so the copy box matches it */
+.story{padding:0;background:var(--paper);position:relative;z-index:0}
+/* the snow sits behind everything; the canvas inside it is sticky, so one
+   window-sized grid covers a section many windows tall */
+/* no overflow here: an overflow of its own would make this the canvas's
+   scroll container and kill the sticky. Sticky stays inside it anyway. */
+.story-snow{position:absolute;inset:0;pointer-events:none;z-index:0}
+.story-snow canvas{position:sticky;top:0;display:block;width:100%;height:100vh}
+.story-open,.collect,.story-end{position:relative;z-index:1}
+/* fallback heading: one-column layouts and reduced motion get it above the
+   composition instead of the boot screen inside the frame */
 .story-open{max-width:var(--col);margin:0 auto;padding:150px var(--gut) 0;text-align:center}
+.story-open h2{color:var(--ink)}
 .collect{
-  --pin:92px;
-  max-width:1560px;margin:86px auto 0;padding:0 var(--gut);
+  max-width:1560px;margin:0 auto;padding:0 var(--gut);
   display:grid;
   /* a 1fr second track would starve a minmax() first track down to its
      minimum, so the text column is sized as a share of the container */
@@ -539,64 +583,135 @@ header{background:var(--paper)}
   column-gap:64px;
 }
 .collect-text{display:flex;flex-direction:column}
-.beat{min-height:78vh;padding-top:var(--pin)}
-/* nothing on the left yet: this is the stretch where the frame is centred */
-.beat.lead{min-height:64vh}
-.beat:last-child{min-height:108vh}
-.beat h3{
-  margin:0;
-  font-family:var(--sans);font-weight:600;
-  /* a touch under the section h2 so the two hard line breaks always hold */
-  font-size:clamp(24px,2.4vw,36px);line-height:1.12;letter-spacing:-0.02em;
-  color:var(--g6);
-}
-.beat p{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--g5);margin-top:16px;max-width:36ch}
+/* one window-height per beat, copy centred in it, level with the frame */
+.beat{min-height:calc(100vh - var(--navh));display:flex;flex-direction:column;justify-content:center}
+/* nothing on the left yet: the stretches where the machine boots and closes */
+.beat.lead{min-height:calc(110vh - var(--navh))}
+.beat.finale{min-height:calc(120vh - var(--navh))}
+/* the copy box is exactly as tall as the machine and splits the way the
+   controller's does: the stuck line at the top, the result at the bottom */
+.beat .copy{display:flex;flex-direction:column;height:var(--machineh,560px)}
+.beat h3{margin:0;font:600 clamp(28px,2.7vw,40px)/1.05 var(--mono);letter-spacing:-0.04em;color:var(--ink)}
+.beat p{font:400 clamp(17px,1.4vw,20px)/1.3 var(--mono);letter-spacing:-0.04em;color:var(--ink);margin:auto 0;max-width:34ch}
 
 /* one frame, no card: every layer sits in the same coordinate space and
    latches up into it, so the four of them end as a single composition */
+/* the sticky part is a window-height rail; the frame rides centred in it,
+   so it is always at the vertical middle, whatever the column width.
+   Everything inside stacks on one grid cell — no absolute positioning, which
+   kept getting laid out stale inside the sticky */
+.stick{position:sticky;top:var(--navh);height:calc(100vh - var(--navh));display:flex;flex-direction:column;justify-content:center}
 .stack{
-  position:sticky;top:var(--pin);
-  aspect-ratio:1000/640;overflow:hidden;
-  /* the same latch the layers use, so the move across reads as one system */
+  position:relative;display:grid;overflow:hidden;
+  /* docked right it is also a step smaller — the same latch the layers use,
+     so the whole move reads as one system; scale keeps the centre */
+  transform:scale(.88);
   transition:transform 560ms cubic-bezier(.22,.61,.36,1);
 }
-.stack.center{transform:translateX(calc(var(--shift,0px) * -0.5))}
+.stack.center{transform:translateX(calc(var(--shift,0px) * -0.5)) scale(1)}
+/* the close is bigger than the open: the frame holds copy now, not a drawing */
+.stack.finale{transform:translateX(calc(var(--shift,0px) * -0.5)) scale(1.1)}
+/* on a short window the grown frame would not fit the rail, so it stays put */
+@media (max-height:840px){
+  .stack.finale{transform:translateX(calc(var(--shift,0px) * -0.5)) scale(1)}
+}
+.stack>*+*{margin-top:0} /* the generic .stack spacing utility must not apply here */
+/* the frame is the machine itself: it never latches and never leaves */
+.layer.frame{grid-area:1/1;transform:none;transition:none}
+.layers{grid-area:1/1;display:grid;transition:transform 560ms cubic-bezier(.22,.61,.36,1)}
+/* everything the machine is holding rides out of the top together */
+.layers.out{transform:translateY(-112%)}
 .layer{
-  position:absolute;inset:0;width:100%;height:100%;
+  grid-area:1/1;width:100%;height:auto;
   transform:translateY(103%);
   transition:transform 560ms cubic-bezier(.22,.61,.36,1);
 }
 .layer.on{transform:none}
-.layer:first-child{transform:none;transition:none}
 
-/* the section lands here: what was just assembled, then what it is for */
-.story-end{max-width:960px;margin:0 auto;padding:210px var(--gut) 130px;text-align:center}
+/* the two screens inside the machine: the boot screen on the lead beat, the
+   closing copy on the last one. Both arrive and leave the way the layers do,
+   and the padding clears the drawn browser chrome (110 of 1000 units) */
+.boot-screen,.end-screen{
+  grid-area:1/1;z-index:2;display:none;text-align:center;
+  transition:transform 560ms cubic-bezier(.22,.61,.36,1);
+}
+.boot-screen{place-items:center;padding:11% 9% 5%}
+.boot-screen h2{color:var(--ink)}
+.boot-screen .btn{margin-top:36px}
+.boot-screen.off{transform:translateY(112%)}
+.end-screen{
+  /* the padding lands on the frame's inner edges: the chrome ends at 103 of
+     640 units (11% of the width), the bottom border at 625 */
+  place-content:center;padding:11% 8% 4%;
+  transform:translateY(112%);
+}
+.end-screen.on{transform:none}
+.end-screen h2{color:var(--ink)}
+/* wider and a size down, so most rows stay one line and the button clears
+   the frame with room to spare */
+.end-screen .spec{margin-top:22px;max-width:68ch}
+.end-screen .spec li{font-size:14px;padding:6px 0}
+.end-screen .btns{margin-top:26px}
+@media (min-width:901px){
+  .story-open,.story-end{display:none}
+  .boot-screen,.end-screen{display:grid}
+}
+@media (min-width:901px) and (prefers-reduced-motion:reduce){
+  .story-open,.story-end{display:block}
+  .boot-screen,.end-screen{display:none}
+}
 
-.logband{background:var(--g2);padding:130px 0}
-.log{background:var(--g6);color:var(--g2);padding:34px 40px 30px;font:400 15px/1.2 var(--mono)}
-.log-head{display:flex;justify-content:space-between;color:var(--g4);font-weight:600;margin-bottom:26px}
-.log-row{display:grid;grid-template-columns:96px 14px minmax(0,210px) 1fr;column-gap:16px;align-items:center;height:32px;opacity:0}
-.log-row.in{opacity:1}
-.log-row .t{color:var(--g4)}
+/* the section lands here on one-column layouts: what was just assembled,
+   then what it is for */
+.story-end{max-width:960px;margin:0 auto;padding:150px var(--gut) 130px;text-align:center}
+.story-end h2{color:var(--ink)}
+
+/* ---- the boundary, designed ---------------------------------------------
+   Cream band. It rides up over the machine while that is still pinned in the
+   story's rail, so the closing frame holds still and this section covers it:
+   the two move at different speeds, which is the parallax. Inside: the
+   hamster in its ball, the claim, three pixel chips, and the boundary log
+   from the game — Ink panel, Cream type, Fur and Blush action squares.
+   -------------------------------------------------------------------------- */
+.boundary{
+  position:relative;z-index:2;background:var(--cream);
+  margin-top:-62vh;                /* the overlap it covers the machine with */
+  padding:120px 0 130px;
+}
+.bwrap{text-align:center;position:relative}
+.ball{display:block;width:168px;height:168px;margin:0 auto 44px}
+.boundary h2{color:var(--ink)}
+.boundary .claim{color:var(--ink);margin:24px auto 0;max-width:60ch;font:400 20px/1.4 var(--mono);letter-spacing:-0.04em}
+.chips{display:flex;gap:16px;justify-content:center;margin-top:40px;flex-wrap:wrap}
+/* the pixel chip: Glint face, 2px Ink frame, hard Ink shadow, as the buttons
+   inside the controller's drawings are built */
+.chip{
+  font:600 13px/1 var(--mono);letter-spacing:0.06em;
+  padding:13px 18px;background:var(--glint);color:var(--ink);
+  box-shadow:inset 0 0 0 2px var(--ink), 4px 4px 0 var(--ink);
+}
+
+/* the log, 1:1 with the game's: Ink panel, Cream monospace, 12px squares */
+.log{background:var(--ink);color:var(--cream);padding:30px 34px 26px;font:400 15px/1.2 var(--mono)}
+.log-head{display:flex;justify-content:space-between;color:var(--cream);opacity:.55;font-weight:600;margin-bottom:22px}
+/* the rows slide in from the left behind the panel's edge and latch — no fade */
+.log-rows{overflow:hidden}
+.log-row{display:grid;grid-template-columns:96px 14px minmax(0,210px) 1fr;column-gap:16px;align-items:center;height:32px;
+  transform:translateX(-101%);transition:transform 420ms cubic-bezier(.22,.61,.36,1)}
+.log-row.in{transform:none}
+.log-row .t{color:var(--cream);opacity:.55}
 .sq{width:12px;height:12px}
 .sq.ej{background:var(--act-eject)}
 .sq.bn{background:var(--act-bounce)}
-.log-legend{display:flex;gap:22px;margin-top:22px;color:var(--g4);font-size:13px}
+.log-legend{display:flex;gap:22px;margin-top:22px;color:var(--cream);opacity:.7;font-size:13px}
 .log-legend span{display:inline-flex;align-items:center;gap:8px}
 .log-legend i{width:10px;height:10px;display:inline-block}
 .log-legend i.ej{background:var(--act-eject)}
 .log-legend i.bn{background:var(--act-bounce)}
 
-/* the boundary now opens the log section, so it sits on the light band and
-   the log stays the only dark object in it */
-.bwrap{text-align:center;position:relative}
-.ball{width:140px;height:140px;border-radius:50%;background:transparent;border:1px solid var(--g4);display:grid;place-items:center;font:400 11px/1.5 var(--mono);color:var(--g5);text-align:center;margin:0 auto 44px}
-.chips{display:flex;gap:12px;justify-content:center;margin-top:38px;flex-wrap:wrap}
-.chip{font:600 13px/1 var(--mono);padding:12px 17px;letter-spacing:0.06em;border:1px solid var(--g4);color:var(--g6)}
-
 .spec{list-style:none;padding:0;margin:38px auto 0;max-width:58ch;text-align:left}
-.spec li{display:grid;grid-template-columns:10px 1fr;gap:16px;padding:15px 0;border-bottom:1px solid var(--g3);font-size:15px;line-height:1.55}
-.spec li::before{content:"";width:7px;height:7px;background:var(--g4);margin-top:9px}
+.spec li{display:grid;grid-template-columns:10px 1fr;gap:16px;padding:7px 0;font:400 15px/1.5 var(--mono);color:var(--ink)}
+.spec li::before{content:"";width:7px;height:7px;background:var(--glow);margin-top:8px}
 
 .people{display:flex;gap:48px;justify-content:center;margin-top:46px;flex-wrap:wrap}
 .person{width:230px;text-align:center}
@@ -644,21 +759,28 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 @media (max-width:900px){
   .collect{grid-template-columns:1fr;column-gap:0;margin-top:72px}
   .beat,.beat:last-child{min-height:0;padding-top:0;margin-bottom:26px}
-  /* relative, not static: the layers are absolute and would otherwise
-     escape to the nearest positioned ancestor */
-  .stack{position:relative;margin-top:40px}
-  .stack.center{transform:none}
-  .beat.lead{display:none}
+  /* no sticky rail and no split copy box: the beats read as a plain list and
+     the finished composition sits under them */
+  .stick{position:static;height:auto}
+  .boundary{margin-top:0}          /* nothing is pinned, so nothing to cover */
+  .stack{margin-top:40px;transform:none}
+  .stack.center,.stack.finale{transform:none}
+  .beat .copy{height:auto}
+  .beat p{margin-top:16px}
+  .beat.lead,.beat.finale{display:none}
   .layer{transform:none}
+  .layers.out{transform:none}
   .story-end{padding-top:110px}
 }
 @media (max-width:720px){
   section{padding:78px 0}
   .story{padding-top:78px}
-  .hero{padding:88px 0 70px}
+  .hero{padding:88px 0 91px}
   .nav-links{display:none}
   .log{padding:24px 20px;font-size:12px}
-  .log-row{grid-template-columns:62px 10px minmax(0,116px) 1fr;column-gap:10px}
+  /* the file and verdict columns wrap at this width, so the row grows */
+  .log-row{grid-template-columns:62px 10px minmax(0,116px) 1fr;column-gap:10px;
+    height:auto;min-height:32px;padding:5px 0;align-items:start}
   .logband,.cta{padding:90px 0}
   .ball{width:120px;height:120px}
   .tab{padding:13px 6px;font-size:11px}
@@ -672,7 +794,11 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .log-row{opacity:1 !important}
-  .layer,.stack.center{transform:none !important;transition:none !important}
+  .layer{transform:none !important;transition:none !important}
+  .stick{position:static;height:auto}
+  .boundary{margin-top:0}
+  .log-row{transform:none !important}
+  .stack{transform:none !important;transition:none !important}
   .sketch .a{animation:none !important}
   .sketch .a-on{opacity:1}
   .sketch .a-off,.sketch .a-flash{opacity:0}
@@ -687,7 +813,8 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 }
 @media (max-width:1000px){
   .panel{grid-template-columns:1fr;row-gap:32px;padding:32px 24px 32px;height:auto}
-  .side{padding-top:0}
+  .side{height:auto;padding-top:0}
+  .result{margin-top:24px;margin-bottom:0}
   .stage{width:100%;height:auto;justify-self:stretch}
   .agt .win{height:auto;grid-template-columns:1fr;row-gap:14px}
   .agt .course{height:230px}
@@ -707,8 +834,9 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
   .nav-right{gap:12px}
   .nav-right .link,.nav-right .btn{white-space:nowrap}
   .nav-right .btn{padding:0 16px}
-  .hero{padding:56px 0 0}
+  .hero{padding:56px 0 44px}
   .hero-hamster{width:140px;height:140px;margin:48px auto -26px}
+  .controller{width:calc(100% - 2 * var(--gut))}
   .controller{padding:96px 0 96px}
   .card-wrap{margin-top:40px}
   .tabs{grid-template-columns:1fr}
@@ -755,7 +883,7 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
     <g id="ham-ring"><rect x="12" y="0" width="1" height="1" fill="#6C2000"/><rect x="13" y="0" width="1" height="1" fill="#6C2000"/><rect x="14" y="0" width="1" height="1" fill="#6C2000"/><rect x="15" y="0" width="1" height="1" fill="#6C2000"/><rect x="16" y="0" width="1" height="1" fill="#6C2000"/><rect x="17" y="0" width="1" height="1" fill="#6C2000"/><rect x="18" y="0" width="1" height="1" fill="#6C2000"/><rect x="19" y="0" width="1" height="1" fill="#6C2000"/><rect x="9" y="1" width="1" height="1" fill="#6C2000"/><rect x="10" y="1" width="1" height="1" fill="#6C2000"/><rect x="11" y="1" width="1" height="1" fill="#6C2000"/><rect x="20" y="1" width="1" height="1" fill="#6C2000"/><rect x="21" y="1" width="1" height="1" fill="#6C2000"/><rect x="22" y="1" width="1" height="1" fill="#6C2000"/><rect x="7" y="2" width="1" height="1" fill="#6C2000"/><rect x="8" y="2" width="1" height="1" fill="#6C2000"/><rect x="23" y="2" width="1" height="1" fill="#6C2000"/><rect x="24" y="2" width="1" height="1" fill="#6C2000"/><rect x="6" y="3" width="1" height="1" fill="#6C2000"/><rect x="25" y="3" width="1" height="1" fill="#6C2000"/><rect x="5" y="4" width="1" height="1" fill="#6C2000"/><rect x="26" y="4" width="1" height="1" fill="#6C2000"/><rect x="4" y="5" width="1" height="1" fill="#6C2000"/><rect x="27" y="5" width="1" height="1" fill="#6C2000"/><rect x="3" y="6" width="1" height="1" fill="#6C2000"/><rect x="28" y="6" width="1" height="1" fill="#6C2000"/><rect x="2" y="7" width="1" height="1" fill="#6C2000"/><rect x="29" y="7" width="1" height="1" fill="#6C2000"/><rect x="2" y="8" width="1" height="1" fill="#6C2000"/><rect x="29" y="8" width="1" height="1" fill="#6C2000"/><rect x="1" y="9" width="1" height="1" fill="#6C2000"/><rect x="30" y="9" width="1" height="1" fill="#6C2000"/><rect x="1" y="10" width="1" height="1" fill="#6C2000"/><rect x="30" y="10" width="1" height="1" fill="#6C2000"/><rect x="1" y="11" width="1" height="1" fill="#6C2000"/><rect x="30" y="11" width="1" height="1" fill="#6C2000"/><rect x="0" y="12" width="1" height="1" fill="#6C2000"/><rect x="31" y="12" width="1" height="1" fill="#6C2000"/><rect x="0" y="13" width="1" height="1" fill="#6C2000"/><rect x="31" y="13" width="1" height="1" fill="#6C2000"/><rect x="0" y="14" width="1" height="1" fill="#6C2000"/><rect x="31" y="14" width="1" height="1" fill="#6C2000"/><rect x="0" y="15" width="1" height="1" fill="#6C2000"/><rect x="31" y="15" width="1" height="1" fill="#6C2000"/><rect x="0" y="16" width="1" height="1" fill="#6C2000"/><rect x="31" y="16" width="1" height="1" fill="#6C2000"/><rect x="0" y="17" width="1" height="1" fill="#6C2000"/><rect x="31" y="17" width="1" height="1" fill="#6C2000"/><rect x="0" y="18" width="1" height="1" fill="#6C2000"/><rect x="31" y="18" width="1" height="1" fill="#6C2000"/><rect x="0" y="19" width="1" height="1" fill="#6C2000"/><rect x="31" y="19" width="1" height="1" fill="#6C2000"/><rect x="1" y="20" width="1" height="1" fill="#6C2000"/><rect x="30" y="20" width="1" height="1" fill="#6C2000"/><rect x="1" y="21" width="1" height="1" fill="#6C2000"/><rect x="30" y="21" width="1" height="1" fill="#6C2000"/><rect x="1" y="22" width="1" height="1" fill="#6C2000"/><rect x="30" y="22" width="1" height="1" fill="#6C2000"/><rect x="2" y="23" width="1" height="1" fill="#6C2000"/><rect x="29" y="23" width="1" height="1" fill="#6C2000"/><rect x="2" y="24" width="1" height="1" fill="#6C2000"/><rect x="29" y="24" width="1" height="1" fill="#6C2000"/><rect x="3" y="25" width="1" height="1" fill="#6C2000"/><rect x="28" y="25" width="1" height="1" fill="#6C2000"/><rect x="4" y="26" width="1" height="1" fill="#6C2000"/><rect x="27" y="26" width="1" height="1" fill="#6C2000"/><rect x="5" y="27" width="1" height="1" fill="#6C2000"/><rect x="26" y="27" width="1" height="1" fill="#6C2000"/><rect x="6" y="28" width="1" height="1" fill="#6C2000"/><rect x="25" y="28" width="1" height="1" fill="#6C2000"/><rect x="7" y="29" width="1" height="1" fill="#6C2000"/><rect x="8" y="29" width="1" height="1" fill="#6C2000"/><rect x="23" y="29" width="1" height="1" fill="#6C2000"/><rect x="24" y="29" width="1" height="1" fill="#6C2000"/><rect x="9" y="30" width="1" height="1" fill="#6C2000"/><rect x="10" y="30" width="1" height="1" fill="#6C2000"/><rect x="11" y="30" width="1" height="1" fill="#6C2000"/><rect x="20" y="30" width="1" height="1" fill="#6C2000"/><rect x="21" y="30" width="1" height="1" fill="#6C2000"/><rect x="22" y="30" width="1" height="1" fill="#6C2000"/><rect x="12" y="31" width="1" height="1" fill="#6C2000"/><rect x="13" y="31" width="1" height="1" fill="#6C2000"/><rect x="14" y="31" width="1" height="1" fill="#6C2000"/><rect x="15" y="31" width="1" height="1" fill="#6C2000"/><rect x="16" y="31" width="1" height="1" fill="#6C2000"/><rect x="17" y="31" width="1" height="1" fill="#6C2000"/><rect x="18" y="31" width="1" height="1" fill="#6C2000"/><rect x="19" y="31" width="1" height="1" fill="#6C2000"/></g>
     <symbol id="hamster" viewBox="0 0 32 32"><use href="#ham-ring"/><use href="#ham-face"/></symbol>
     <symbol id="hamster-face" viewBox="4 5 24 23"><use href="#ham-face"/></symbol>
-    <symbol id="cursor" viewBox="0 0 14 18"><path d="M2 1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-4v1h1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v3H2z" fill="#6C2000"/></symbol>
+    <symbol id="cursor" viewBox="0 0 23 23"><g fill="#6C2000"><rect x="0" y="0" width="4" height="1"/><rect x="0" y="1" width="8" height="1"/><rect x="0" y="2" width="12" height="1"/><rect x="0" y="3" width="17" height="1"/><rect x="1" y="4" width="16" height="1"/><rect x="1" y="5" width="15" height="1"/><rect x="1" y="6" width="14" height="1"/><rect x="1" y="7" width="13" height="1"/><rect x="2" y="8" width="11" height="1"/><rect x="2" y="9" width="12" height="1"/><rect x="2" y="10" width="13" height="1"/><rect x="2" y="11" width="14" height="1"/><rect x="3" y="12" width="14" height="1"/><rect x="3" y="13" width="5" height="1"/><rect x="9" y="13" width="9" height="1"/><rect x="3" y="14" width="4" height="1"/><rect x="10" y="14" width="9" height="1"/><rect x="3" y="15" width="3" height="1"/><rect x="11" y="15" width="9" height="1"/><rect x="3" y="16" width="2" height="1"/><rect x="12" y="16" width="9" height="1"/><rect x="13" y="17" width="9" height="1"/><rect x="14" y="18" width="9" height="1"/><rect x="15" y="19" width="7" height="1"/><rect x="16" y="20" width="5" height="1"/><rect x="17" y="21" width="3" height="1"/><rect x="18" y="22" width="1" height="1"/></g></symbol>
     <symbol id="ico-desktop" viewBox="0 0 8 8"><path fill="#6C2000" d="M0 0h8v1H0zM0 1h1v4H0zM7 1h1v4H7zM0 5h8v1H0zM3 6h2v1H3zM2 7h4v1H2z"/><path fill="#FF9B31" d="M1 1h6v4H1z"/><path fill="#6C2000" d="M2 2h3v1H2zM2 3h2v1H2z"/></symbol>
     <symbol id="ico-data" viewBox="0 0 8 8"><path fill="#6C2000" d="M0 7h8v1H0zM0 0h1v7H0z"/><path fill="#FF9B31" d="M2 4h1v3H2zM4 2h1v5H4zM6 0h1v7H6z"/><path fill="#FF7D7D" d="M2 3h1v1H2zM4 1h1v1H4z"/></symbol>
     <symbol id="ico-web" viewBox="0 0 8 8"><path fill="#6C2000" d="M2 0h4v1H2zM1 1h1v1H1zM6 1h1v1H6zM0 2h1v4H0zM7 2h1v4H7zM1 6h1v1H1zM6 6h1v1H6zM2 7h4v1H2z"/><path fill="#FF9B31" d="M2 1h4v6H2z"/><path fill="#6C2000" d="M2 3h4v1H2zM4 1h1v6H4z"/></symbol>
@@ -798,6 +926,9 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 <main id="top">
 
 <!-- HERO -->
+<div class="flyzone">
+<canvas class="hero-canvas px" aria-hidden="true"></canvas>
+
 <section class="hero">
   <div class="col">
     <h1 class="t-h2">A replayable computer you can pass between humans and agents.</h1>
@@ -946,96 +1077,108 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
 
 </section>
 
+<div class="hero-tips" aria-hidden="true"></div>
+</div><!-- /flyzone -->
+
 
 <!-- MINUTE ZERO: the one-click story -->
 <section id="click" class="story">
+  <div class="story-snow" aria-hidden="true"><canvas class="story-flakes px"></canvas></div>
 
   <!-- the layers are defined once and referenced by each shot below, so the
        four illustrations stay in sync if any of this geometry is edited -->
   <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
     <defs>
 
-      <g id="l-frame">
-        <g fill="none" stroke="#5E5C59" stroke-width="1.5">
-          <rect x="1" y="1" width="998" height="638"/>
-          <line x1="1" y1="40" x2="999" y2="40"/>
-          <line x1="1" y1="86" x2="999" y2="86"/>
-          <rect x="18" y="10" width="150" height="24"/>
-          <rect x="184" y="10" width="150" height="24" stroke="#CFCECB"/>
-          <rect x="150" y="52" width="700" height="24" stroke="#CFCECB"/>
-        </g>
-        <g font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">
-          <text x="32" y="27">onewill.ai</text>
-          <text x="162" y="69">your browser</text>
-        </g>
+      <!-- palette: Ink 6C2000, Cocoa A2715D, Cream FFE4B8, Paper FCF6E9,
+           Glint FFFCF5, Shade F0D0A6, Glow FF9B31, Fur F98912, Blush FF7D7D.
+           Outer frames ~2px rendered, inner details ~1px, as in the controller -->
+
+      <g id="l-frame" font-family="IBM Plex Mono,monospace">
+        <rect x="14" y="14" width="984" height="624" fill="#F0D0A6"/>
+        <rect x="3.5" y="3.5" width="983" height="623" fill="#FFFCF5" stroke="#6C2000" stroke-width="3"/>
+        <line x1="2" y1="51.5" x2="987" y2="51.5" stroke="#6C2000" stroke-width="3"/>
+        <rect x="24" y="21" width="10" height="10" fill="#FF7D7D"/>
+        <rect x="42" y="21" width="10" height="10" fill="#FF9B31"/>
+        <rect x="60" y="21" width="10" height="10" fill="#F98912"/>
+        <rect x="96" y="13" width="176" height="37" fill="#6C2000"/>
+        <text x="184" y="37" font-size="14" fill="#FFE4B8" text-anchor="middle">onewill.ai</text>
+        <rect x="272.75" y="13.75" width="174.5" height="35.5" fill="none" stroke="#A2715D" stroke-width="1.5"/>
+        <line x1="2" y1="101.5" x2="987" y2="101.5" stroke="#6C2000" stroke-width="3"/>
+        <rect x="150.75" y="63.75" width="686.5" height="26.5" fill="#FCF6E9" stroke="#A2715D" stroke-width="1.5"/>
+        <text x="170" y="81" font-size="13" fill="#A2715D">your browser</text>
       </g>
 
-      <g id="l-desktop">
-        <rect x="18" y="102" width="964" height="520" fill="#F5F5F4" stroke="#9A9895" stroke-width="1.5"/>
-        <text x="34" y="124" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">the desktop you are renting</text>
-        <g fill="#FFFFFF" stroke="#5E5C59" stroke-width="1.5">
-          <path d="M36 152h16l5 8h23a3 3 0 0 1 3 3v25a3 3 0 0 1-3 3H36a3 3 0 0 1-3-3v-33a3 3 0 0 1 3-3z"/>
-          <path d="M40 218h22l14 14v30a3 3 0 0 1-3 3H40a3 3 0 0 1-3-3v-41a3 3 0 0 1 3-3z"/>
-          <path d="M62 218v11a3 3 0 0 0 3 3h11" fill="none"/>
-          <path d="M40 294h22l14 14v30a3 3 0 0 1-3 3H40a3 3 0 0 1-3-3v-41a3 3 0 0 1 3-3z"/>
-          <path d="M62 294v11a3 3 0 0 0 3 3h11" fill="none"/>
+      <g id="l-desktop" font-family="IBM Plex Mono,monospace">
+        <rect x="25" y="124" width="938" height="480" fill="#FCF6E9" stroke="#6C2000" stroke-width="2.5"/>
+        <text x="44" y="152" font-size="13" fill="#A2715D">the desktop you are renting</text>
+        <!-- project folder -->
+        <rect x="49" y="177" width="22" height="10" fill="#FF9B31" stroke="#6C2000" stroke-width="2"/>
+        <rect x="49" y="185" width="48" height="32" fill="#FF9B31" stroke="#6C2000" stroke-width="2"/>
+        <text x="73" y="236" font-size="12" fill="#6C2000" text-anchor="middle">project</text>
+        <!-- data.csv -->
+        <rect x="56" y="258" width="36" height="44" fill="#FFFCF5" stroke="#6C2000" stroke-width="2"/>
+        <g stroke="#A2715D" stroke-width="2">
+          <line x1="63" y1="270" x2="85" y2="270"/><line x1="63" y1="280" x2="79" y2="280"/><line x1="63" y1="290" x2="83" y2="290"/>
         </g>
-        <g font-family="ui-monospace,monospace" font-size="10" fill="#5E5C59" text-anchor="middle">
-          <text x="57" y="206">project</text>
-          <text x="57" y="282">data.csv</text>
-          <text x="57" y="358">notes.md</text>
+        <text x="74" y="321" font-size="12" fill="#6C2000" text-anchor="middle">data.csv</text>
+        <!-- notes.md -->
+        <rect x="56" y="343" width="36" height="44" fill="#FFFCF5" stroke="#6C2000" stroke-width="2"/>
+        <g stroke="#A2715D" stroke-width="2">
+          <line x1="63" y1="355" x2="83" y2="355"/><line x1="63" y1="365" x2="85" y2="365"/><line x1="63" y1="375" x2="77" y2="375"/>
         </g>
-        <rect x="350" y="562" width="300" height="48" rx="10" fill="#FFFFFF" stroke="#9A9895" stroke-width="1.5"/>
-        <g stroke="#9A9895" stroke-width="1.5">
-          <rect x="411" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
-          <rect x="449" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
-          <rect x="487" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
-          <rect x="525" y="572" width="26" height="26" rx="5" fill="#2B2A28"/>
-          <rect x="563" y="572" width="26" height="26" rx="5" fill="#E7E6E4"/>
+        <text x="74" y="406" font-size="12" fill="#6C2000" text-anchor="middle">notes.md</text>
+        <!-- dock -->
+        <rect x="344" y="544" width="300" height="48" fill="#FFE4B8" stroke="#6C2000" stroke-width="2.5"/>
+        <g stroke="#6C2000" stroke-width="1.5">
+          <rect x="406" y="555" width="26" height="26" fill="#FFFCF5"/>
+          <rect x="444" y="555" width="26" height="26" fill="#FFFCF5"/>
+          <rect x="482" y="555" width="26" height="26" fill="#FFFCF5"/>
+          <rect x="520" y="555" width="26" height="26" fill="#6C2000"/>
+          <rect x="558" y="555" width="26" height="26" fill="#FFFCF5"/>
         </g>
-        <g fill="#5E5C59">
-          <circle cx="462" cy="604" r="1.8"/>
-          <circle cx="538" cy="604" r="1.8"/>
-        </g>
+        <rect x="455" y="586" width="4" height="4" fill="#6C2000"/>
+        <rect x="531" y="586" width="4" height="4" fill="#6C2000"/>
       </g>
 
-      <g id="l-chrome">
-        <g fill="none" stroke="#5E5C59" stroke-width="1.5">
-          <rect x="110" y="150" width="520" height="320" fill="#FFFFFF"/>
-          <line x1="110" y1="184" x2="630" y2="184"/>
-          <g stroke="#CFCECB">
-            <line x1="140" y1="222" x2="414" y2="222"/>
-            <line x1="140" y1="246" x2="584" y2="246"/>
-            <line x1="140" y1="270" x2="524" y2="270"/>
-            <rect x="140" y="300" width="210" height="130"/>
-            <line x1="380" y1="312" x2="584" y2="312"/>
-            <line x1="380" y1="336" x2="554" y2="336"/>
-            <line x1="380" y1="360" x2="578" y2="360"/>
-          </g>
+      <g id="l-chrome" font-family="IBM Plex Mono,monospace">
+        <rect x="110" y="170" width="520" height="320" fill="#FFFCF5" stroke="#6C2000" stroke-width="2.5"/>
+        <rect x="110" y="170" width="520" height="36" fill="#6C2000"/>
+        <rect x="124" y="184" width="8" height="8" fill="#FF7D7D"/>
+        <rect x="138" y="184" width="8" height="8" fill="#FF9B31"/>
+        <rect x="152" y="184" width="8" height="8" fill="#F98912"/>
+        <text x="370" y="194" font-size="13" fill="#FFE4B8" text-anchor="middle">Chrome, running on the machine</text>
+        <g stroke="#A2715D" stroke-width="2">
+          <line x1="140" y1="240" x2="414" y2="240"/>
+          <line x1="140" y1="264" x2="584" y2="264"/>
+          <line x1="140" y1="288" x2="524" y2="288"/>
+          <line x1="380" y1="330" x2="584" y2="330"/>
+          <line x1="380" y1="354" x2="554" y2="354"/>
+          <line x1="380" y1="378" x2="578" y2="378"/>
+          <line x1="380" y1="402" x2="536" y2="402"/>
         </g>
-        <text x="126" y="174" font-family="ui-monospace,monospace" font-size="12" fill="#5E5C59">Chrome, running on the machine</text>
+        <rect x="140.75" y="318.75" width="208.5" height="130.5" fill="#FFE4B8" stroke="#A2715D" stroke-width="1.5"/>
       </g>
 
-      <g id="l-term">
-        <rect x="470" y="270" width="470" height="280" fill="#2B2A28"/>
-        <line x1="470" y1="304" x2="940" y2="304" stroke="#5E5C59" stroke-width="1.5"/>
-        <g stroke="#9A9895" stroke-width="1.5">
-          <line x1="500" y1="342" x2="720" y2="342"/>
-          <line x1="500" y1="370" x2="830" y2="370"/>
-          <line x1="500" y1="398" x2="640" y2="398"/>
-          <line x1="500" y1="426" x2="890" y2="426"/>
-          <line x1="500" y1="454" x2="606" y2="454"/>
-          <line x1="500" y1="482" x2="778" y2="482"/>
+      <g id="l-term" font-family="IBM Plex Mono,monospace">
+        <rect x="480" y="300" width="470" height="270" fill="#6C2000"/>
+        <text x="498" y="327" font-size="13" fill="#FFE4B8">terminal</text>
+        <line x1="480" y1="338" x2="950" y2="338" stroke="#A2715D" stroke-width="2"/>
+        <g stroke="#FFE4B8" stroke-width="3">
+          <line x1="510" y1="368" x2="730" y2="368"/>
+          <line x1="510" y1="424" x2="650" y2="424"/>
+          <line x1="510" y1="452" x2="900" y2="452"/>
+          <line x1="510" y1="480" x2="616" y2="480"/>
         </g>
-        <rect x="500" y="502" width="12" height="20" fill="#9A9895"/>
-        <text x="488" y="296" font-family="ui-monospace,monospace" font-size="12" fill="#CFCECB">terminal</text>
+        <line x1="510" y1="396" x2="840" y2="396" stroke="#FF9B31" stroke-width="3"/>
+        <rect x="510" y="500" width="12" height="20" fill="#FF9B31"/>
       </g>
 
     </defs>
   </svg>
 
   <div class="story-open">
-    <h2>One click, and the machine is running.</h2>
+    <h2 class="t-h3">One click, and the machine is running.</h2>
   </div>
 
   <div class="collect">
@@ -1043,35 +1186,67 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
     <div class="collect-text">
       <div class="beat lead" aria-hidden="true"></div>
       <div class="beat">
-        <h3>It starts in<br>a browser tab.</h3>
-        <p>No download, no install, nothing to configure first.</p>
+        <div class="copy">
+          <h3>It starts in<br>a browser tab.</h3>
+          <p>No download, no install, nothing to configure first.</p>
+        </div>
       </div>
       <div class="beat">
-        <h3>Inside is<br>a full desktop.</h3>
-        <p>Files, windows, a dock. All of it running on the machine, not on your laptop.</p>
+        <div class="copy">
+          <h3>Inside is<br>a full desktop.</h3>
+          <p>Files, windows, a dock. All of it running on the machine, not on your laptop.</p>
+        </div>
       </div>
       <div class="beat">
-        <h3>Chrome runs<br>on the machine.</h3>
-        <p>So you can watch every page your agent opens, while it opens it.</p>
+        <div class="copy">
+          <h3>Chrome runs<br>on the machine.</h3>
+          <p>So you can watch every page your agent opens, while it opens it.</p>
+        </div>
       </div>
       <div class="beat">
-        <h3>And a terminal,<br>when you want one.</h3>
-        <p>Same machine, same state, whichever way you decide to drive it.</p>
+        <div class="copy">
+          <h3>And a terminal,<br>when you want one.</h3>
+          <p>Same machine, same state, whichever way you decide to drive it.</p>
+        </div>
       </div>
+      <div class="beat finale" aria-hidden="true"></div>
     </div>
 
     <div class="collect-frame">
-      <div class="stack" role="img" aria-label="A browser window at onewill.ai holding a rented desktop, with file icons, a dock, a Chrome window and a terminal">
-        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-frame"/></svg>
-        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-desktop"/></svg>
-        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-chrome"/></svg>
-        <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-term"/></svg>
+      <div class="stick">
+      <div class="stack">
+        <svg class="layer frame" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-frame"/></svg>
+        <div class="layers" role="img" aria-label="A browser window at onewill.ai holding a rented desktop, with file icons, a dock, a Chrome window and a terminal">
+          <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-desktop"/></svg>
+          <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-chrome"/></svg>
+          <svg class="layer" viewBox="0 0 1000 640" aria-hidden="true"><use href="#l-term"/></svg>
+        </div>
+        <div class="boot-screen">
+          <div>
+            <h2 class="t-h4">One click, and the machine is running.</h2>
+            <div><button type="button" class="btn btn-glow boot-start">Start</button></div>
+          </div>
+        </div>
+        <div class="end-screen">
+          <div>
+            <h2 class="t-h4">One tab. The whole machine.</h2>
+            <ul class="spec">
+              <li>A full desktop and a terminal, both in the browser</li>
+              <li>Save and load the machine's state with checkpoints, or fork it and try both ways</li>
+              <li>Every action that crosses the boundary is recorded, and can be undone</li>
+              <li>Share a machine with one link, to watch or to take over</li>
+              <li>Launch into a ready image, identical every time</li>
+            </ul>
+            <div class="btns"><a class="btn btn-ink" href="#start">Talk to us<svg class="px arr" aria-hidden="true"><use href="#arrow"/></svg></a></div>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   </div>
 
   <div class="story-end">
-    <h2>One tab. The whole machine.</h2>
+    <h2 class="t-h3">One tab. The whole machine.</h2>
     <ul class="spec">
       <li>A full desktop and a terminal, both in the browser</li>
       <li>Save and load the machine's state with checkpoints, or fork it and try both ways</li>
@@ -1079,16 +1254,18 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
       <li>Share a machine with one link, to watch or to take over</li>
       <li>Launch into a ready image, identical every time</li>
     </ul>
+    <div class="btns" style="margin-top:36px"><a class="btn btn-ink" href="#start">Talk to us<svg class="px arr" aria-hidden="true"><use href="#arrow"/></svg></a></div>
   </div>
 
 </section>
 
-<!-- THE BOUNDARY, and the log that shows it working -->
-<div class="logband">
+<!-- THE BOUNDARY, and the log that shows it working. It slides up over the
+     machine the story leaves pinned, so that frame is covered, not scrolled. -->
+<section class="boundary">
   <div class="col bwrap center">
-    <div class="ball">hamster<br>in ball</div>
-    <h2>Agent-World Boundary</h2>
-    <p class="body dim" style="margin-top:20px">
+    <svg class="ball px" viewBox="0 0 32 32" aria-hidden="true"><use href="#hamster"/></svg>
+    <h2 class="t-h3">Agent-World Boundary</h2>
+    <p class="claim">
       Every action is observed. Every effect is mediated.
       You remain in control with governance, provenance, rollback, and more.
     </p>
@@ -1098,6 +1275,7 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
   <div class="wide" style="margin-top:76px">
     <div class="log" id="log">
       <div class="log-head"><span>boundary log · golden-maple-lantern</span><span>R undo last</span></div>
+      <div class="log-rows">
       <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>read ./data.csv</span><span>ejected on expand</span></div>
       <div class="log-row"><span class="t">10:33:10</span><i class="sq ej"></i><span>.env</span><span>ejected on expand</span></div>
       <div class="log-row"><span class="t">10:33:12</span><i class="sq bn"></i><span>.env</span><span>bounced</span></div>
@@ -1108,11 +1286,12 @@ footer{border-top:1px solid var(--g3);padding:44px 0;font-size:13px;color:var(--
       <div class="log-row"><span class="t">10:33:14</span><i class="sq ej"></i><span>pytest ./tests</span><span>ejected on expand</span></div>
       <div class="log-row"><span class="t">10:33:16</span><i class="sq ej"></i><span>docker build</span><span>ejected on expand</span></div>
       <div class="log-row"><span class="t">10:33:17</span><i class="sq ej"></i><span>curl api.openai.com</span><span>ejected on expand</span></div>
+      </div>
       <div class="log-legend"><span><i class="ej"></i>ejected on expand</span><span><i class="bn"></i>bounced</span></div>
     </div>
   </div>
 
-</div>
+</section>
 
 <!-- TEAM -->
 <section id="team">
@@ -1291,7 +1470,7 @@ if ('IntersectionObserver' in window){
    beat. IntersectionObserver only: scroll position is never read or
    written, and scrolling back takes it all out again.
    ============================================================= */
-var layers = Array.prototype.slice.call(document.querySelectorAll('.layer'));
+var layers = Array.prototype.slice.call(document.querySelectorAll('.layers .layer'));
 var beats  = Array.prototype.slice.call(document.querySelectorAll('.beat'));
 var stack  = document.querySelector('.stack');
 var collectEl = document.querySelector('.collect');
@@ -1305,14 +1484,52 @@ function measureShift(){
   var inner = collectEl.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   var shift = inner - frameEl.clientWidth;
   collectEl.style.setProperty('--shift', (shift > 0 ? shift : 0) + 'px');
+  /* the docked frame is scaled to .88, so that is the height the copy matches */
+  collectEl.style.setProperty('--machineh', Math.round(stack.offsetHeight * 0.88) + 'px');
 }
 function showLayers(n){
   layers.forEach(function(l, i){ l.classList.toggle('on', i <= n); });
 }
-/* beat 0 is the empty lead: frame centred, nothing built on it yet */
+/* beat 0 is the lead: frame centred, the boot screen holds the floor.
+   The last beat is the close: everything the machine holds rides out of the
+   top, the closing copy slides in behind it and the frame comes back to the
+   middle at full size. Layers keep their .on state, so scrolling back up
+   puts the composition straight back. */
+var boot = document.querySelector('.boot-screen');
+var endScreen = document.querySelector('.end-screen');
+var layersEl = document.querySelector('.layers');
+var minBeat = 0;   /* raised by dockGuard once the first copy is on its way in */
 function setBeat(i){
-  stack.classList.toggle('center', i === 0);
-  showLayers(Math.max(0, i - 1));
+  if (i < minBeat) i = minBeat;
+  var lead = i === 0, finale = i === beats.length - 1;
+  stack.classList.toggle('center', lead || finale);
+  stack.classList.toggle('finale', finale);
+  if (boot) boot.classList.toggle('off', !lead);
+  if (endScreen) endScreen.classList.toggle('on', finale);
+  if (layersEl) layersEl.classList.toggle('out', finale);
+  showLayers(finale ? layers.length - 1 : i - 2);
+}
+/* Start scrolls to the first beat; the observer does the rest */
+var startBtn = document.querySelector('.boot-start');
+if (startBtn) startBtn.addEventListener('click', function(){
+  beats[1].scrollIntoView({ behavior:'smooth', block:'center' });
+});
+/* The mid-window band that drives the other beats fires too late for the
+   first one: its copy is already on screen while the machine still sits
+   centred over that column, so the text reads as sliding under the frame.
+   This one watches the first beat's own top edge instead and docks the
+   machine while that copy is still a good screenful below. */
+function dockGuard(){
+  if (!('IntersectionObserver' in window)) return;
+  var docked = false;
+  new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting && !docked){ docked = true; minBeat = 1; setBeat(1); }
+      else if (!e.isIntersecting && docked && e.boundingClientRect.top > 0){
+        docked = false; minBeat = 0; setBeat(0);   /* back up into the boot screen */
+      }
+    });
+  }, { rootMargin: '0px 0px -12% 0px' }).observe(beats[1]);
 }
 measureShift();
 window.addEventListener('resize', function(){ measureShift(); });
@@ -1320,6 +1537,7 @@ if (reduce || !('IntersectionObserver' in window)){
   showLayers(layers.length - 1);
 } else {
   setBeat(0);
+  dockGuard();
   var storyIO = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
       if (e.isIntersecting) setBeat(beats.indexOf(e.target));
@@ -1344,6 +1562,371 @@ if (!('IntersectionObserver' in window) || reduce){
   }, { threshold: 0.25 });
   io.observe(document.getElementById('log'));
 }
+})();
+</script>
+<script>
+/* =============================================================
+   THE FLYING HAMSTER — the hero plus the Paper corridors beside the
+   narrowed controller band are one zone it roams. The same body as
+   the game demos: a
+   12fps cell grid blitted at an integer device-pixel scale, the
+   24x23 sprite, the 36-frame turnaround. It drifts on its own,
+   slow and frictionless, and leans a few turnaround frames into
+   whichever way it is going; leaving one edge it returns from the
+   opposite one. It goes straight for the cursor whenever the cursor
+   is over the zone, sliding along anything in the way rather than
+   taking the short way round the edge, and a click both bursts the
+   ball and gives it a burst of speed. The headline, the buttons and
+   the Cream band are solid, so the copy always reads. Pixels drift past with the boundary labels:
+   risky ones are blocked at the ball (white flash, full spin),
+   data gets pulled in and eaten — the pivot's call. A label shows
+   while its pixel is near the ball, not on hover. Off screen, in
+   a hidden tab and under reduced motion it does not run; the
+   still hamster from the Figma frame stays put instead.
+   ============================================================= */
+(function(){
+'use strict';
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+var zone=document.querySelector('.flyzone'), hero=document.querySelector('.hero'),
+    cv=document.querySelector('.hero-canvas'), tipsEl=document.querySelector('.hero-tips');
+if(!zone||!hero||!cv||!tipsEl) return;
+zone.classList.add('fly');
+
+const PAL=['#6C2000', '#A2715D', '#F98912', '#FDE5BD', '#FF7D7D', '#FF9B31', '#FFFFFF'];
+const SPR=['.....00..000000..00.....', '....0220055555500220....', '...021422222222221420...', '...011442222222211440...', '...022222222222222220...', '...022222222222222220...', '..02222002222220022220..', '..02220660222206602220..', '.0222206002222060022220.', '.0224200102552001024220.', '033443300330033003344330', '033333333333333333333330', '033333333033330333333330', '033333333300003333333330', '033333333336633333333330', '.0333333133333313333330.', '.0333333313333133333330.', '..03333311333311333330..', '..03331113333331113330..', '...033333333333333330...', '....0333333333333330....', '.....00055555555000.....', '........00000000........'];
+const RPAL=["#6C2000", "#A2715D", "#F98912", "#FDE5BD", "#FF7D7D", "#FF9B31", "#FFFFFF"];
+const ROT=[".....00..000000..00.........0220055555500220.......021422222222221420......011442222222211440......022222222222222220......022222222222222220.....02222002222220022220....02220660222206602220...0222206002222060022220..0224200102552001024220.033443300330033003344330033333333333333333333330033333333033330333333330033333333300003333333330033333333336633333333330.0333333133333313333330..0333333313333133333330...03333311333311333330....03331113333331113330.....033333333333333330.......0333333333333330.........00055555555000.............00000000........", ".....00..000000..00.........0220055555500220.......021422222222221420......011442222222211440......022222222222222220......022222222222222220.....02222220022222202220....02222206602222066220...0222222060022220600220..0222242001025520010420.023344433003300330033430033333333333333333333330033333333330333303333330033333333333000033333330033333333333366333333330.0333333331333333133330..0333333333133331333330...03333333113333113330....03333111133333311330.....033333333333333330.......0333333333333330.........00055555555000.............00000000........", "......00.000000..00..........022055555500220........02142222222221420......021144222222211440......022222222222222220......022222222222222220.....02222222002222220020....02222220666022206600...0222222220600222260020..0222224420010255201020.022333444330033003303340033333333333333333333330033333333333303333033330033333333333330000333330033333333333333663333330.0333333333313333333330..0333333333331333333330...03333333331133311330....03333331113333331130.....033333333333333330.......0233333333333330.........00055555555000.............00000000........", "......00.000000..00..........022055555500220........02142222222221420......021144222222211440......022222222222222220......022222222222222220.....02222222220022222000....02222222206602222060...0222222222006002220600..0222222244200102550010.022233334443300330030030023333333333333333333330033333333333333033333330033333333333333300003330033333333333333336633330.0333333333333133333130..0333333333333313331330...03333333333113333130....02333333311133333110.....023333333333333330.......0223333333333330.........00055555555000.............00000000........", ".......00000000.00............0220555550220.........0021422222221420.......022114422222114420......022222222222222220......022222222222222220.....02222222222200222200....02222222222066022200...0222222222220060222260..0222222222442001025200.022222333344433003303300022233333333333333333330022333333333333330333030023333333333333333000330023333333333333333363330.0233333333333331333310..0233333333333333333330...02333333333331133310....02233333331111333310.....022333333333333330.......0222333333333330.........00055555555000.............00000000........", "........000000000..............02205555000..........0002142222222000.......022211442222222220......022222222222222220......022222222222222220.....02222222222220022220....02222222222220660220...0222222222222206002220..0222222222224220012520.022222223333444330030030022223333333333333333330022233333333333333303300022233333333333333330030022233333333333333336630.0223333333333333313330..0223333333333333313330...02233333333333311330....02223333333311133330.....022233333333333330.......0222233333333330.........00055555555000.............00000000........", ".........00000000..............00220555000..........0000214222222000.......022221144222222220......022222222222222220......022222222222222220.....02222222222222200220....02222222222222206020...0222222222222222060220..0222222222222242201050.022222222233334443303300022222233333333333333330022222333333333333333330022223333333333333333000022223333333333333333360.0222333333333333331330..0222233333333333333330...02222333333333331130....02222233333333111330...05022222333333333330.....0.0222223333333330.........00055555555000.............00000000........", ".........0000000...............0002205500...........0002021422222000.......022222114422222220......022222222222222220......022222222222222220.....02222222222222220020....02222222222222220660...0222222222222222220000..0222222222222222420000.022222222222333344430030022222222333333333333330022222223333333333333330022222233333333333333300022222233333333333333330.0222223333333333333330..0222222333333333333310..002222233333333333310..0502222223333333311130..055022222233333333330....00.0222222233333330.........00055555555000.............00000000........", ".........000000................0050220500...........0002202142222000.......022222211442222220......022222222222222220......022222222222222220.....02222222222222222200....02222222222222222260...0222222222222222222060..0222222222222222224200.022222222222223333443300022222222223333333333330022222222233333333333330022222222333333333333330022222222333333333333330.0222222233333333333330..0222222223333333333330..002222222333333333330..0552222222233333333110..055022222222333333330....00.0222222223333330.........00055555555000.............00000000........", ".........000000................0055022000...........0002222214202000.......022222221144222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222200..0222222222222222222420.022222222222222233334330022222222222233333333330022222222222333333333330022222222223333333333330022222222223333333333330.0222222222333333333330..0222222222333333333330..002222222223333333330..0552222222222333333310..055022222222223333330....00.0222222222333330.........00055555555000.............00000000........", ".........000000................0055502200...........0002222221420000.......022222222114422220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222333440022222222222222333333330022222222222223333333330022222222222233333333330022222222222233333333330.0222222222223333333330..0222222222223333333330..002222222222233333330..0550222222222233333330..055022222222222333330....00.0222222222223330.........00055555555000.............00000000........", ".........0000000...............0055550220...........0002222222222000.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222233340022222222222222223333330022222222222222233333330022222222222222333333330022222222222222333333330.0222222222222233333330..0222222222222233333330..000222222222222333330..0555022222222222333330..055502222222222223330....0000222222222222330.........00055555555000.............00000000........", ".........00000000..............00555550220..........0002222222222200.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222330022222222222222222233330022222222222222222333330022222222222222223333330022222222222222223333330.0222222222222222333330..0222222222222222333330...00022222222222233330...055502222222222223330...05550222222222222330.....000222222222222230.........00055555555000.............00000000........", "........000000000..............00555550220..........0002222222222200.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222230022222222222222222222330022222222222222222233330022222222222222222233330022222222222222222233330.0222222222222222223330..0222222222222222223330...00002222222222222330....05550222222222222330....0555022222222222230......00022222222222220.........00055555555000.............00000000........", ".......00000000.00............0005555550220.........0002222222222220.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222230022222222222222222222330022222222222222222223330022222222222222222223330.0222222222222222222330..0222222222222222222330...02000222222222222230....00555022222222222230.....055502222222222220.......0002222222222220.........00055555555000.............00000000........", "......00.000000..00..........020055555500220........00022222222222220......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220022222222222222222222230022222222222222222222230022222222222222222222230.0222222222222222222230..0222222222222222222230...02220022222222222220....02205502222222222220.....020550222222222220.......0200222222222220.........00055555555000.............00000000........", "......00.000000..00..........022055555500220........02222222222222220......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220.0222222222222222222220..0222222222222222222220...02222000222222222220....02220555022222222220.....022055502222222220.......0220002222222220.........00055555555000.............00000000........", ".....00..000000..00.........0220055555500220.......022222222222222220......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220.0222222222222222222220..0222222222222222222220...02222220002222222220....02222205550222222220.....022220555022222220.......0222200022222220.........00055555555000.............00000000........", ".....00..000000..00.........0220055555500220.......022222222222222220......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220.0222222222222222222220..0222222222222222222220...02222222200222222220....02222222055022222220.....022222205502222220.......0222222002222220.........00055555555000.............00000000........", ".....00..000000..00.........0220055555500220.......022222222222222220......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220.0222222222222222222220..0222222222222222222220...02222222220002222220....02222222205550222220.....022222220555022220.......0222222200022220.........00055555555000.............00000000........", ".....00..000000.00..........022005555550220........02222222222222220.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220022222222222222222222220.0222222222222222222220..0222222222222222222220...02222222222200022220....02222222222055502220.....022222222205550220.......0222222222000220.........00055555555000.............00000000........", ".....00..000000.00..........022005555550020........02222222222222000.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220022222222222222222222220032222222222222222222220032222222222222222222220032222222222222222222220.0322222222222222222220..0322222222222222222220...02222222222222002220....02222222222220550220.....022222222222055020.......0222222222220020.........00055555555000.............00000000........", "......00.00000000............0220555555000..........0222222222222000.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.022222222222222222222220032222222222222222222220033222222222222222222220033322222222222222222220033322222222222222222220.0332222222222222222220..0332222222222222222220...03222222222222200020....03222222222222055500.....022222222222205550.......0222222222222000.........00055555555000.............00000000........", ".......000000000..............02205555500...........0022222222222000.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.032222222222222222222220033222222222222222222220033332222222222222222220033332222222222222222220033332222222222222222220.0333222222222222222220..0333222222222222222220...03322222222222220000....03322222222222205550.....0322222222222205550......02222222222222000........00055555555000.............00000000........", ".......00000000...............02205555500...........0022222222222000.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.033222222222222222222220033332222222222222222220033333222222222222222220033333322222222222222220033333322222222222222220.0333332222222222222220..0333332222222222222220...03333222222222222000....033322222222222205550....03322222222222205550.....032222222222222000.......00055555555000.............00000000........", "........0000000................0220555500...........0002222222222000.......022222222222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.043332222222222222222220033333322222222222222220033333332222222222222220033333333222222222222220033333333222222222222220.0333333322222222222220..0333333322222222222220...033333222222222222000...0333332222222222205550...033322222222222205550....0332222222222220000......00055555555000.............00000000........", ".........000000................0022055500...........0000214222222000.......022221144222222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0222222222222222222220..0222222222222222222220.044333222222222222222220033333333222222222222220033333333322222222222220033333333332222222222220033333333332222222222220.0333333333222222222220..0333333333222222222220...033333332222222222200...0333333322222222220550...033333222222222220550....0333222222222220.00......00055555555000.............00000000........", ".........000000................0002205500...........0002021422222000.......022222114422222220......022222222222222220......022222222222222220.....02222222222222222220....02222222222222222220...0022222222222222222220..0242222222222222222220.033433332222222222222220033333333332222222222220033333333333222222222220033333333333322222222220033333333333322222222220.0333333333332222222220..0333333333332222222220...033333333322222222200...0133333332222222220550...033333322222222220550....0333332222222220.00......00055555555000.............00000000........", ".........000000................0050220500...........0002222142022000.......022222211442222220......022222222222222220......022222222222222220.....00222222222222222220....06222222222222222220...0002222222222222222220..0124222222222222222220.003344333322222222222220033333333333322222222220033333333333332222222220033333333333333222222220033333333333333222222220.0333333333333322222220..0333333333333222222220...033333333333222222200...0113333333322222222550...033333333222222220550....0333333222222220.00......00055555555000.............00000000........", "........0000000................0055022000...........0002222214202000.......022222221144222220......022222222222222220......022222222222222220.....02002222222222222220....06602222222222222220...0060222222222222222220..0010242222222222222220.030034443333222222222220033333333333333222222220033333333333333322222220003333333333333332222220033333333333333332222220.0333333333333333222220..0133333333333332222220...013333333333332222200...0311133333333222222050...033333333332222220550....0333333322222220.00......00055555555000.............00000000........", ".......00000000...............00055502200...........0002222221420000.......022222222114422220......022222222222222220......022222222222222220.....02200222222222222220....02060222222222222220...0226002222222222222220..0500122422222222222220.003303344433332222222220033333333333333332222220033333333333333333222220000333333333333333322220063333333333333333322220.0331333333333333332220..0333333333333333322220...03113333333333322220....03311133333333222220.....03333333333322222050.....0333333333222220.0.......00055555555000.............00000000........", ".......000000000..............00055550220...........0002222222142000.......022222222211442220......022222222222222220......022222222222222220.....02222002222222222220....02206602222222222220...0222060022222222222220..0252010224222222222220.030030033444333322222220033333333333333333322220003303333333333333332220030033333333333333332220036633333333333333332220.0333133333333333333220..0333133333333333333220...03311333333333333220....03333111333333332220.....033333333333332220.......0333333333322220.........00055555555000.............00000000........", "......00.00000000............0220555550220..........0214222222214200.......021144222221144220......022222222222222220......022222222222222220.....00222200222222222220....00222066022222222220...0022226000222222222220..0125200102442222222220.003303300334443333222220033333333333333333332220030333033333333333333220033000333333333333333320033363333333333333333320.0133331333333333333320..0333333333333333333320...01333113333333333320....01333311113333333220.....033333333333333220.......0333333333332220.........00055555555000.............00000000........", ".....00..000000.00..........022005555550220........02142222222221420.......011442222222114420......022222222222222220......022222222222222220.....00022222002222222220....06022220660222222220...0000222060002222222220..0010552001024422222220.030030033003344433332220033333333333333333333320033333330333333333333330033300003333333333333330033336633333333333333330.0313333313333333333330..0331333133333333333330...03133331133333333330....01133333111333333320.....033333333333333320.......0333333333333220.........00055555555000.............00000000........", ".....00..000000.00..........022005555550220........02142222222221420.......011442222222114420......022222222222222220......022222222222222220.....02002222220022222220....00660222066602222220...0206022220600222222220..0200025520010244222220.043303300330033444333220033333333333333333333330033330333303333333333330033333000033333333333330033333366333333333333330.0333333333133333333330..0333333331333333333330...03311333113333333330....03113333331113333330.....033333333333333330.......0333333333333320.........00055555555000.............00000000........", ".....00..000000..00.........0220055555500220.......021422222222221420......011442222222211440......022222222222222220......022222222222222220.....02220222222002222220....02266022220660222220...0220600222206002222220..0240010255200102422220.034330033003300334443320033333333333333333333330033333303333033333333330033333330000333333333330033333333663333333333330.0333313333331333333330..0333331333313333333330...03331133331133333330....03311333333111133330.....033333333333333330.......0333333333333330.........00055555555000.............00000000........"];
+/* eaten or bounced, per the pivot: data (files, network, system)
+   gets eaten, risky things get bounced */
+const LABELS=[
+ ['rm -rf ~/',0],['sudo',0],['env: API_KEY',0],['.ssh/id_rsa',0],['credentials.json',0],
+ ['curl api.openai.com',1],['git push',1],['npm install',1],['pip install',1],['POST /login',1],
+ ['read ./data.csv',2],['homework.pdf',2],['screenshot.png',2],['notes.md',2],['grades.xlsx',2],
+ ['chrome tab',3],['cron job',3],['port 8080',3],['autograder',3],['docker build',3]];
+const TONE=[['#FF7F7A','#6C2000'],['#F28C1F','#6C2000'],['#FDE5BD','#6C2000'],['#7A2400','#FDE5BD']];
+const DCOL=['#6C2000','#F98912','#A2715D','#FF9B31','#FF7D7D'];
+
+const SW=24,SH=23,R_OFF=15.5,R_ON=20; /* the game expands to 40; half of that here */
+let r=R_OFF,on=0;
+const sctx=cv.getContext('2d');
+const lc=document.createElement('canvas'), ctx=lc.getContext('2d');
+let W=0,H=0,K=5,DPR=1,POP=12;
+
+const ringCache={};
+function ring(rad){const k=rad.toFixed(1);if(ringCache[k])return ringCache[k];const R=Math.ceil(rad)+1,out=[];
+  for(let j=-R;j<=R;j++)for(let i=-R;i<=R;i++){if(Math.abs(Math.hypot(i+.5,j+.5)-rad)<.55)out.push([i,j]);}return ringCache[k]=out;}
+const rand=(a,b)=>a+Math.random()*(b-a);
+const wrapW=x=>((x%W)+W)%W, wrapH=y=>((y%H)+H)%H;
+/* distance on a torus: both axes wrap */
+function delta(ax,ay,bx,by){let dx=ax-bx,dy=ay-by;
+  if(dx>W/2)dx-=W;if(dx<-W/2)dx+=W;if(dy>H/2)dy-=H;if(dy<-H/2)dy+=H;return[dx,dy];}
+
+/* ---------- hamster ---------- */
+let hx=null,hy=null,hvx=0.45,hvy=-0.18;
+let steerT=0,ang=rand(0,Math.PI*2),cruise=0.55;
+let slideT=0,turbo=0;
+let spin=0,spinT=0,spinDur=7,spinDir=1;
+let kickCool=0; /* chasing the cursor into the headline must not tumble it non-stop */
+function kick(nx){if(spinT>0||kickCool>0)return;spinDir=nx<0?-1:1;spinT=spinDur;kickCool=20;}
+let facing=0; /* -3..3, eased one frame per tick toward the flight direction */
+let lookx=0,looky=0,lookHold=0;
+let twitch=0,twitchSide=0,nextTwitch=40,puff=0,nextPuff=90;
+let debris=[],hits=[],echo=0;
+
+/* the cursor leads while it is anywhere over the zone */
+let mx=null,my=null;
+addEventListener('mousemove',function(e){const hb=zone.getBoundingClientRect();
+  if(e.clientX>=hb.left&&e.clientX<hb.right&&e.clientY>=hb.top&&e.clientY<hb.bottom){
+    mx=(e.clientX-hb.left)*DPR/K;my=(e.clientY-hb.top)*DPR/K;}else{mx=null;my=null;}});
+/* click anywhere free: the hamsterball from the game — expand, eject, echo ring */
+function shove(){
+  for(const d of debris){if(d.eating)continue;
+    const[dx,dy]=delta(d.x+d.s/2,d.y+d.s/2,hx,hy),dist=Math.hypot(dx,dy)||1;
+    if(dist<r+1){const nx=dx/dist,ny=dy/dist,sp=Math.min(5,1.2+(r+1-dist)*0.25);
+      d.vx=nx*sp;d.vy=ny*sp;d.x=hx+nx*(r+1.5)-d.s/2;d.y=hy+ny*(r+1.5)-d.s/2;d.cool=20;d.blink=1;
+      hits.push({a:Math.atan2(ny,nx),t:5,type:'eject'});kick(nx);}}
+  echo=4;
+}
+zone.addEventListener('click',function(e){
+  if(e.target.closest('a,button'))return;
+  on=10;r=R_ON;shove();
+  turbo=30;   /* and it puts its foot down on the way to the cursor */
+});
+
+/* solid: the hero copy, and the Cream band itself — the hamster may only use
+   the Paper corridors beside it, and only when one is wide enough to fly in */
+let obs=[];
+function measure(){obs=[];const hb=zone.getBoundingClientRect();
+  const box=el=>{const b=el.getBoundingClientRect();
+    return {x:(b.left-hb.left)*DPR/K-2,y:(b.top-hb.top)*DPR/K-2,w:b.width*DPR/K+4,h:b.height*DPR/K+4};};
+  hero.querySelectorAll('.col h1,.col .sub,.col .btns a').forEach(el=>obs.push(box(el)));
+  const band=document.querySelector('.controller');
+  if(band){const o=box(band);
+    /* a corridor thinner than the ball is a trap, so the band claims the
+       whole width instead and the hamster simply stays in the hero */
+    if(Math.min(o.x,W-(o.x+o.w))<r*2+6){o.x=-4;o.w=W+8;}
+    obs.push(o);}}
+
+function fit(){DPR=window.devicePixelRatio||1;
+  const w=zone.clientWidth,h=zone.clientHeight,oldW=W,oldH=H;
+  if(!w||!h)return false; /* not laid out yet: keep the old grid, try again */
+  /* device pixels per cell stays a whole number, as in the games */
+  K=Math.max(2,Math.round((w<720?3:4)*DPR));
+  W=Math.ceil(w*DPR/K);H=Math.ceil(h*DPR/K);
+  lc.width=W;lc.height=H;cv.width=W*K;cv.height=H*K;
+  cv.style.width=(cv.width/DPR)+'px';cv.style.height=(cv.height/DPR)+'px';
+  POP=Math.max(8,Math.round(W*H/2800));
+  measure();
+  if(hx===null){/* first fit: take off from the seat the still hamster held */
+    const seat=document.querySelector('.hero-hamster'),hb=zone.getBoundingClientRect();
+    if(seat){const b=seat.getBoundingClientRect();hx=(b.left+b.width/2-hb.left)*DPR/K;hy=(b.top+b.height/2-hb.top)*DPR/K;}
+    else{hx=W/2;hy=H*0.8;}
+    hy=Math.min(H-r-2,Math.max(r+2,hy));
+  }else if(oldW&&oldH){hx=hx*W/oldW;hy=hy*H/oldH;for(const d of debris){d.x=d.x*W/oldW;d.y=d.y*H/oldH;}}
+  return true;
+}
+
+/* ---------- pixels ---------- */
+function makePixel(x,y,vx,vy){const rs=Math.random(),l=LABELS[Math.floor(Math.random()*LABELS.length)];
+  return {x,y,vx,vy,s:rs<.55?1:rs<.85?2:3,c:DCOL[Math.floor(Math.random()*DCOL.length)],label:l[0],tone:l[1],cool:0,blink:0};}
+function seed(){let x=Math.random()*W,y=Math.random()*H;
+  const[dx,dy]=delta(x,y,hx,hy);if(Math.hypot(dx,dy)<r+8){x=wrapW(x+r+12);}
+  const a=rand(0,Math.PI*2);debris.push(makePixel(x,y,Math.cos(a)*rand(.12,.3),Math.sin(a)*rand(.12,.3)));}
+function spawnEdge(){const side=Math.floor(Math.random()*4);
+  const x=side===2?-2:side===3?W+2:Math.random()*W, y=side===0?-2:side===1?H+2:Math.random()*H;
+  const a=Math.atan2(H/2-y,W/2-x)+rand(-.7,.7);
+  debris.push(makePixel(x,y,Math.cos(a)*rand(.12,.3),Math.sin(a)*rand(.12,.3)));}
+
+/* ---------- loop ---------- */
+const FPS=12;let last=0,frame=0,rafId=0,running=false;
+function tick(t){
+  rafId=requestAnimationFrame(tick);
+  if(t-last<1000/FPS)return; last=t; frame++;
+  /* wander: every few seconds a new heading, eased into — no friction,
+     no darting, it just keeps drifting */
+  const off=hx<-1||hx>W+1||hy<-1||hy>H+1;
+  let ease=0.07;
+  if(turbo>0)turbo--;
+  if(slideT>0)slideT--;
+  if(mx!==null){
+    /* straight at the cursor: a plain difference, not the wrapped one, or it
+       would take the short way round the edge and arrive from the far side */
+    const dx=mx-hx,dy=my-hy,dist=Math.hypot(dx,dy);
+    if(dist>r+6){
+      /* while sliding it keeps the heading the bounce gave it, so it rounds
+         the corner of whatever is in the way instead of pushing into it */
+      if(slideT===0)ang=Math.atan2(dy,dx);
+      cruise=Math.min(turbo>0?2.6:1.4,(turbo>0?1.1:0.5)+dist*(turbo>0?0.022:0.012));
+      steerT=20;ease=turbo>0?0.24:0.14;
+    }else cruise*=0.8; /* close enough: settle beside it */
+  }else if(!off&&--steerT<=0){steerT=40+Math.floor(Math.random()*60);ang+=rand(-1.2,1.2);cruise=rand(0.45,0.95);}
+  hvx+=(Math.cos(ang)*cruise-hvx)*ease;
+  hvy+=(Math.sin(ang)*cruise-hvy)*ease;
+  hx+=hvx; hy+=hvy;
+  /* out one side, in from the other — only once the whole ball is gone */
+  const M=r+3;
+  if(hx<-M)hx=W+M;else if(hx>W+M)hx=-M;
+  if(hy<-M)hy=H+M;else if(hy>H+M)hy=-M;
+  /* the copy is solid: closest-point circle test, reflect and steer away */
+  for(const o of obs){
+    const px=Math.max(o.x,Math.min(hx,o.x+o.w)),py=Math.max(o.y,Math.min(hy,o.y+o.h));
+    let dx=hx-px,dy=hy-py,d=Math.hypot(dx,dy);
+    if(d>=r+1)continue;
+    let nx,ny;
+    if(d<0.001){/* centre inside the box (a resize put it there): out the nearest side */
+      const l=hx-o.x,rt=o.x+o.w-hx,tp=hy-o.y,bt=o.y+o.h-hy,m=Math.min(l,rt,tp,bt);
+      nx=m===l?-1:m===rt?1:0; ny=m===tp?-1:m===bt?1:0; d=1;
+      hx=nx? (nx<0?o.x-r-1:o.x+o.w+r+1) : hx; hy=ny? (ny<0?o.y-r-1:o.y+o.h+r+1) : hy;
+    }else{nx=dx/d;ny=dy/d;hx=px+nx*(r+1);hy=py+ny*(r+1);}
+    const dot=hvx*nx+hvy*ny; if(dot<0){hvx-=2*dot*nx;hvy-=2*dot*ny;}
+    if(mx!==null){
+      /* chasing: turn along the obstacle's edge, whichever way leads toward
+         the cursor, and hold that heading for a few ticks to clear the corner */
+      const tx=mx-hx,ty=my-hy;
+      let sx=-ny,sy=nx; if(sx*tx+sy*ty<0){sx=ny;sy=-nx;}
+      ang=Math.atan2(sy,sx); slideT=8;
+    }else{ang=Math.atan2(ny,nx)+rand(-0.5,0.5);}
+    steerT=Math.max(steerT,24);
+    hits.push({a:Math.atan2(-ny,-nx),t:2,type:'bounce'}); kick(nx||hvx);
+  }
+  /* lean into the flight direction; the glint follows it too */
+  const tf=Math.abs(hvx)<0.12?0:Math.max(-3,Math.min(3,Math.round(hvx*4)));
+  if(facing<tf)facing++;else if(facing>tf)facing--;
+  const mvx=Math.abs(hvx)>0.25?Math.sign(hvx):0,mvy=Math.abs(hvy)>0.25?Math.sign(hvy):0;
+  if(mvx||mvy){lookx=mvx;looky=mvy;lookHold=10;}else if(lookHold>0&&--lookHold===0){lookx=0;looky=0;}
+  if(spinT>0){spinT--;const p=1-spinT/spinDur,e=1-Math.pow(1-p,3);spin=spinDir*36*e;if(spinT===0)spin=0;}
+  if(on>0&&--on===0)r=R_OFF;
+  if(echo>0)echo--;
+  if(kickCool>0)kickCool--;
+  if(--nextTwitch<=0){twitch=2;twitchSide=Math.random()<.5?0:1;nextTwitch=36+Math.floor(Math.random()*48);}if(twitch>0)twitch--;
+  if(--nextPuff<=0){puff=8;nextPuff=80+Math.floor(Math.random()*60);}if(puff>0)puff--;
+
+  const alive=[];
+  for(const d of debris){
+    if(d.eating){/* pulled in toward the mouth, shrinking offset each tick */
+      d.eatT--;const k=d.eatT/6,[dx,dy]=delta(d.x+d.s/2,d.y+d.s/2,hx,hy);
+      d.x=hx-d.s/2+dx*k;d.y=hy+4-d.s/2+dy*k;
+      if(d.eatT<=0){puff=8;spawnEdge();continue;}
+      alive.push(d);continue;}
+    d.x=wrapW(d.x+d.vx);d.y=wrapH(d.y+d.vy);
+    if(d.cool>0)d.cool--;if(d.blink>0)d.blink--;
+    const[dx,dy]=delta(d.x+d.s/2,d.y+d.s/2,hx,hy),dist=Math.hypot(dx,dy)||1;
+    if(dist<r+1&&d.cool===0){
+      const nx=dx/dist,ny=dy/dist;
+      if(d.tone===0){/* risky: blocked at the boundary — white flash, full spin */
+        const dot=d.vx*nx+d.vy*ny;if(dot<0){d.vx-=2*dot*nx;d.vy-=2*dot*ny;}
+        const sp=Math.hypot(d.vx,d.vy);if(sp<0.5){d.vx+=nx*0.5;d.vy+=ny*0.5;}
+        d.x=hx+nx*(r+1.5)-d.s/2;d.y=hy+ny*(r+1.5)-d.s/2;
+        d.blink=2;d.cool=20;
+        hits.push({a:Math.atan2(ny,nx),t:4,type:'block'});kick(nx);
+      }else{/* data: eaten */
+        d.eating=true;d.eatT=6;
+        hits.push({a:Math.atan2(ny,nx),t:3,type:'bounce'});
+      }
+    }
+    alive.push(d);
+  }
+  debris=alive;
+  while(debris.length<POP)spawnEdge();
+  for(const h of hits)h.t--;hits=hits.filter(h=>h.t>0);
+  draw();
+}
+
+/* the ball leaves whole and returns whole: no edge copies */
+function drawAt(fn){fn(0,0);}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(const d of debris){ctx.fillStyle=d.blink>0?'#FFFFFF':d.c;
+    const x=Math.round(d.x),y=Math.round(d.y);
+    ctx.fillRect(x,y,d.s,d.s);
+    if(x+d.s>W)ctx.fillRect(x-W,y,d.s,d.s);
+    if(y+d.s>H)ctx.fillRect(x,y-H,d.s,d.s);}
+  drawAt(function(offx,offy){
+    const cx=Math.round(hx)+offx,cy=Math.round(hy)+offy;
+    ctx.fillStyle=on>0?'rgba(249,137,18,.12)':'rgba(249,137,18,.06)';const R=Math.floor(r);
+    for(let j=-R;j<=R;j++){const w=Math.floor(Math.sqrt(r*r-(j+.5)*(j+.5)));ctx.fillRect(cx-w,cy+j,2*w,1);}
+    if(echo>0){const er=r+2+(4-echo)*2;ctx.fillStyle=echo>2?'#F98912':'#FDE5BD';
+      for(const[i,j]of ring(er))ctx.fillRect(cx+i,cy+j,1,1);}
+    for(const[i,j]of ring(r)){let col=PAL[0],bulge=0;const a=Math.atan2(j+.5,i+.5);
+      if(echo===4)col='#F98912';
+      for(const h of hits){let da=Math.abs(a-h.a);da=Math.min(da,2*Math.PI-da);
+        const span=(h.type==='bounce'?0.45:0.6+0.4*h.t/4)*(16/r);
+        if(da<span){if(h.type==='block'){col=h.t>=3&&da<span*0.4?'#FFFFFF':'#F98912';if(h.t>=3)bulge=1;}
+          else if(h.type==='eject')col=h.t>=4?'#FFFFFF':'#F98912';
+          else col='#FF9B31';break;}}
+      ctx.fillStyle=col;
+      if(bulge){const n=Math.hypot(i+.5,j+.5);ctx.fillRect(cx+i+Math.round((i+.5)/n),cy+j+Math.round((j+.5)/n),1,1);}
+      else ctx.fillRect(cx+i,cy+j,1,1);}
+    /* the hamster: spinning uses the full turnaround, flying leans a few
+       frames of it, at rest the front view blinks, glints and twitches */
+    const ox=Math.round(cx-SW/2),oy=Math.round(cy-SH/2);
+    const fi=spinT>0?((Math.round(spin)%36)+36)%36:(facing>=0?facing:36+facing);
+    if(fi!==0){const F=ROT[fi];
+      for(let j=0;j<SH;j++)for(let i=0;i<SW;i++){const ch=F[j*24+i];if(ch==='.')continue;ctx.fillStyle=RPAL[+ch];ctx.fillRect(ox+i,oy+j,1,1);}
+      return;}
+    const blink=(frame%40)<2,eye={r0:7,r1:9,cols:[[6,9],[14,17]],lid:8};
+    const inEye=(i,j)=>j>=eye.r0&&j<=eye.r1&&eye.cols.some(([a,b])=>i>=a&&i<=b),isEyeCell=ch=>ch==='0'||ch==='1'||ch==='6';
+    const inEar=(i,j)=>j<=2&&(twitchSide===0?(i>=3&&i<=9):(i>=14&&i<=20));
+    if(puff>0){ctx.fillStyle=PAL[0];ctx.fillRect(ox-1,oy+11,1,3);ctx.fillRect(ox+SW,oy+11,1,3);}
+    const late=[];
+    for(let j=0;j<SH;j++)for(let i=0;i<SW;i++){let ch=SPR[j][i];if(ch==='.')continue;
+      if(puff>0&&j>=11&&j<=13&&(i===0||i===SW-1))ch='3';
+      if(inEye(i,j)&&isEyeCell(ch)){if(blink)ch=(j===eye.lid)?'0':'2';else if(ch==='6'){late.push([i+lookx,j+looky,'6']);ch='0';}}
+      if(twitch>0&&inEar(i,j)){late.push([i+(twitchSide===0?-1:1),j,ch]);continue;}
+      ctx.fillStyle=PAL[+ch];ctx.fillRect(ox+i,oy+j,1,1);}
+    for(const[x,y,ch]of late){ctx.fillStyle=PAL[+ch];ctx.fillRect(ox+x,oy+y,1,1);}
+  });
+  sctx.imageSmoothingEnabled=false;sctx.clearRect(0,0,cv.width,cv.height);
+  sctx.drawImage(lc,0,0,W,H,0,0,W*K,H*K);
+  /* labels surface while their pixel is near the ball, not on hover */
+  const k=K/DPR;let html='';
+  for(const d of debris){if(d.eating)continue;
+    const[dx,dy]=delta(d.x+d.s/2,d.y+d.s/2,hx,hy);
+    if(Math.hypot(dx,dy)>r+14)continue;
+    html+='<span style="background:'+TONE[d.tone][0]+';color:'+TONE[d.tone][1]+
+      ';left:'+Math.round((d.x+d.s+2)*k)+'px;top:'+Math.round((d.y-2)*k)+'px">'+d.label+'</span>';
+  }
+  tipsEl.innerHTML=html;
+}
+
+/* runs only while the hero is on screen in a visible tab */
+function start(){if(!running){running=true;last=0;rafId=requestAnimationFrame(tick);}}
+function stop(){if(running){running=false;cancelAnimationFrame(rafId);}}
+let seen=true;
+function sync(){if(seen&&!document.hidden&&hx!==null)start();else stop();}
+if('IntersectionObserver' in window){seen=false;
+  new IntersectionObserver(function(es){es.forEach(function(e){seen=e.isIntersecting;sync();});},{rootMargin:'80px 0px'}).observe(zone);}
+document.addEventListener('visibilitychange',sync);
+addEventListener('resize',fit);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){measure();});
+(function init(){
+  if(!fit()){requestAnimationFrame(init);return;} /* a zero-size first paint must not seed NaN */
+  while(debris.length<POP)seed();
+  sync();
+})();
+})();
+</script>
+<script>
+/* =============================================================
+   STORY SNOW — the same drifting pixels as the hero, with nothing
+   else attached: no hamster, no boundary, no labels. The canvas is
+   sticky inside the section, so one window-sized cell grid covers a
+   section many windows tall. Off screen, in a hidden tab and under
+   reduced motion it does not run.
+   ============================================================= */
+(function(){
+'use strict';
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+var host=document.querySelector('.story'), cv=document.querySelector('.story-flakes');
+if(!host||!cv) return;
+const DCOL=['#6C2000','#F98912','#A2715D','#FF9B31','#FF7D7D'];
+const sctx=cv.getContext('2d');
+const lc=document.createElement('canvas'),ctx=lc.getContext('2d');
+let W=0,H=0,K=4,DPR=1,POP=0,flakes=[];
+const rand=(a,b)=>a+Math.random()*(b-a);
+const wrapW=x=>((x%W)+W)%W, wrapH=y=>((y%H)+H)%H;
+function fit(){DPR=window.devicePixelRatio||1;
+  const w=cv.clientWidth,h=cv.clientHeight,oldW=W,oldH=H;
+  if(!w||!h)return false; /* a zero-size first paint would seed NaN */
+  K=Math.max(2,Math.round((w<720?3:4)*DPR));   /* same cell as the hero */
+  W=Math.ceil(w*DPR/K);H=Math.ceil(h*DPR/K);
+  lc.width=W;lc.height=H;cv.width=W*K;cv.height=H*K;
+  POP=Math.max(8,Math.round(W*H/2800));
+  if(oldW&&oldH)for(const f of flakes){f.x=f.x*W/oldW;f.y=f.y*H/oldH;}
+  return true;
+}
+function make(x,y){const rs=Math.random();
+  const a=rand(0,Math.PI*2),sp=rand(.12,.3);
+  return {x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,s:rs<.55?1:rs<.85?2:3,
+          c:DCOL[Math.floor(Math.random()*DCOL.length)]};}
+const FPS=12;let last=0,rafId=0,running=false;
+function tick(t){
+  rafId=requestAnimationFrame(tick);
+  if(t-last<1000/FPS)return; last=t;
+  ctx.clearRect(0,0,W,H);
+  for(const f of flakes){
+    f.x=wrapW(f.x+f.vx);f.y=wrapH(f.y+f.vy);
+    const x=Math.round(f.x),y=Math.round(f.y);
+    ctx.fillStyle=f.c;ctx.fillRect(x,y,f.s,f.s);
+    if(x+f.s>W)ctx.fillRect(x-W,y,f.s,f.s);
+    if(y+f.s>H)ctx.fillRect(x,y-H,f.s,f.s);
+  }
+  sctx.imageSmoothingEnabled=false;sctx.clearRect(0,0,cv.width,cv.height);
+  sctx.drawImage(lc,0,0,W,H,0,0,W*K,H*K);
+}
+function start(){if(!running&&W){running=true;last=0;rafId=requestAnimationFrame(tick);}}
+function stop(){if(running){running=false;cancelAnimationFrame(rafId);}}
+let seen=true;
+function sync(){if(seen&&!document.hidden)start();else stop();}
+if('IntersectionObserver' in window){seen=false;
+  new IntersectionObserver(function(es){es.forEach(function(e){seen=e.isIntersecting;sync();});},{rootMargin:'100px 0px'}).observe(host);}
+document.addEventListener('visibilitychange',sync);
+addEventListener('resize',function(){if(fit())while(flakes.length<POP)flakes.push(make(Math.random()*W,Math.random()*H));});
+(function init(){
+  if(!fit()){requestAnimationFrame(init);return;}
+  while(flakes.length<POP)flakes.push(make(Math.random()*W,Math.random()*H));
+  sync();
+})();
 })();
 </script>
 </body>
